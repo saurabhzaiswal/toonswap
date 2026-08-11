@@ -15,42 +15,46 @@ Every provider prompt and uploaded reference should pass an IP/impersonation
 review before generation. Public-figure and protected-character requests should
 be rejected with an original alternative.
 
-## Phase 1 — Routed product foundation (implemented in the frontend)
+## Phase 1 — Routed product foundation (implemented)
 
-- Vue Router navigation for Home, Characters, Voices, Story Studio, Blog,
-  Privacy, Terms, and Community Guidelines.
-- 108 original character blueprints across 12 original worlds and nine broad
-  story roles.
+- Vue Router navigation for Home, Characters, Voices, guided Story Studio,
+  animated Roadmap, Blog, Privacy, Terms, and Community Guidelines.
+- 24 illustrated original characters plus 108 structured blueprints across 12
+  original worlds and nine broad story roles.
 - A local custom-character brief builder covering silhouette, personality,
   movement, world role, palette, and prompt.
 - 220 labelled voice-direction profiles: four live backend presets and 216
   planned/research profiles. A 200+ language goal is clearly a roadmap, not a
   claim of reviewed live support.
 - Pinia-backed device-local character, voice, cast, project, and scene drafts.
-- Multi-character story planning from 15 seconds to 60 minutes, with editable
-  scene action, dialogue/song, expression, camera, audio mode, continuity, and
-  regeneration scope.
+- A six-step Simple mode for first-time creators and an optional Creator mode
+  exposing camera, audio, continuity, and partial-regeneration controls.
+- Custom Tailwind-backed Vue fields with scoped SCSS, readable typography,
+  keyboard focus states, help text, and responsive layouts.
 - Product-policy drafts for privacy, terms, and community rules.
 
-## Phase 2 — Production data model and APIs
+## Phase 2 — Production data model and APIs (foundation implemented)
 
-Create versioned domain models rather than expanding the single `MemeJob` into a
-catch-all:
+The first scalable schema/API pass is implemented without expanding the single
+`MemeJob` into a catch-all:
 
-- `Project`: anonymous owner session, title, language, target duration, status.
-- `CharacterAsset`: original/licensed source, consent record, model references,
-  style bible, current version, deletion state.
-- `VoiceAsset`: original preset or consented speaker source, usage scope,
-  consent record, provider voice ID, version.
-- `Scene`: order, duration, cast, location, prompt, dialogue, expression, camera,
-  continuity, moderation state.
+- `StoryProject`: anonymous owner session, language, style, target duration,
+  captions, mode, status, moderation state, and cost estimate.
+- `Character` and `VoiceProfile`: catalog metadata, status, provider fields,
+  consent link, visual/movement/emotion direction, and ownership boundary.
+- `StoryCharacter`: ordered project cast, voice assignment, and custom snapshot.
+- `StoryScene`: order, duration, cast, location, dialogue, expression, camera,
+  continuity, replaceable-layer scope, status, and version.
 - `SceneVersion`: immutable prompt/provider/settings/output record.
 - `Render`: requested quality, estimated cost, approved cost, progress, output.
 - `ConsentRecord`: subject, guardian where required, scope, evidence, expiry,
   withdrawal, deletion completion.
 
-Add authenticated project ownership before durable personal character libraries.
-The existing anonymous UUID job is suitable only for limited short-lived jobs.
+The REST foundation now provides catalog pagination, project creation, session-
+owned reads, scene updates, 15–3600 second project validation, and an honest
+capability endpoint. Provider rendering, catalog seeding, immutable scene/output
+version history, moderation, consent evidence, and cost approval remain the next
+backend phase.
 
 ## Phase 3 — Safety, consent, and rights pipeline
 
@@ -129,4 +133,3 @@ Define and implement before public access:
   voice consent, minors, abuse, and IP similarity.
 - Qualified legal review of privacy, terms, community rules, provider terms,
   commercial licences, child-safety design, and launch markets.
-

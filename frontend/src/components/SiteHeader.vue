@@ -10,6 +10,7 @@ const links = [
   { label: 'Characters', to: '/characters' },
   { label: 'Voices', to: '/voices' },
   { label: 'Story Studio', to: '/story-studio' },
+  { label: 'Roadmap', to: '/roadmap' },
   { label: 'Blog', to: '/blog' },
 ];
 

@@ -14,20 +14,177 @@ enum JobStatus {
   FAILED
 }
 
+enum CatalogStatus {
+  LIVE
+  PLANNED
+  RESEARCH
+  ARCHIVED
+}
+
+enum ProjectStatus {
+  DRAFT
+  PLANNING
+  READY
+  RENDERING
+  COMPLETE
+  FAILED
+  ARCHIVED
+}
+
+enum StudioMode {
+  SIMPLE
+  CREATOR
+}
+
+enum SceneStatus {
+  DRAFT
+  APPROVED
+  QUEUED
+  RENDERING
+  COMPLETE
+  FAILED
+}
+
 model MemeJob {
-  id            String    @id // UUIDv7, generated in service, doubles as session id
-  character     String
-  language      String    @default("hindi") // 'bhojpuri' | 'kannada' | 'hindi' | ...
-  voiceStyle    String    @default("comedy-uncle") // generic style id, never a real person's name
-  selfieUrl     String
-  voiceUrl      String?
-  scriptText    String?
-  status        JobStatus @default(PENDING)
-  outputUrl     String?
-  errorMessage  String?
-  watermarked   Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id // UUIDv7, generated in service, doubles as session id
+  character    String
+  language     String    @default("hindi") // 'bhojpuri' | 'kannada' | 'hindi' | ...
+  voiceStyle   String    @default("comedy-uncle") // generic style id, never a real person's name
+  selfieUrl    String
+  voiceUrl     String?
+  scriptText   String?
+  status       JobStatus @default(PENDING)
+  outputUrl    String?
+  errorMessage String?
+  watermarked  Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([status])
+}
+
+model Character {
+  id                    String           @id
+  slug                  String           @unique
+  name                  String
+  worldId               String
+  worldName             String
+  era                   String
+  archetype             String
+  personality           String
+  movementStyle         Json
+  visualBrief           Json
+  imageUrl              String?
+  thumbnailUrl          String?
+  tags                  Json?
+  status                CatalogStatus    @default(PLANNED)
+  isSystem              Boolean          @default(true)
+  ownerSessionId        String?
+  consentRecordId       String?
+  defaultVoiceProfileId String?
+  defaultVoiceProfile   VoiceProfile?    @relation("DefaultCharacterVoice", fields: [defaultVoiceProfileId], references: [id], onDelete: SetNull)
+  storyCharacters       StoryCharacter[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([worldId, status])
+  @@index([ownerSessionId])
+}
+
+model VoiceProfile {
+  id                   String           @id
+  slug                 String           @unique
+  name                 String
+  languageCode         String
+  languageName         String
+  region               String
+  direction            String
+  ageFeel              String?
+  genderPresentation   String?
+  emotionalRange       Json
+  previewUrl           String?
+  providerVoiceId      String?
+  providerMetadata     Json?
+  consentRequired      Boolean          @default(false)
+  status               CatalogStatus    @default(RESEARCH)
+  defaultForCharacters Character[]      @relation("DefaultCharacterVoice")
+  storyCharacters      StoryCharacter[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([languageCode, status])
+  @@index([region])
+}
+
+model StoryProject {
+  id                    String           @id
+  ownerSessionId        String
+  title                 String
+  prompt                String
+  worldId               String
+  genre                 String
+  audience              String
+  visualStyle           String
+  primaryLanguageCode   String
+  targetDurationSeconds Int
+  captionsEnabled       Boolean          @default(true)
+  mode                  StudioMode       @default(SIMPLE)
+  status                ProjectStatus    @default(DRAFT)
+  version               Int              @default(1)
+  moderationState       Json?
+  costEstimate          Json?
+  storyCharacters       StoryCharacter[]
+  scenes                StoryScene[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([ownerSessionId, updatedAt])
+  @@index([status, updatedAt])
+}
+
+model StoryCharacter {
+  id             String        @id
+  projectId      String
+  characterId    String?
+  voiceProfileId String?
+  role           String
+  sortOrder      Int
+  customSnapshot Json?
+  direction      Json?
+  project        StoryProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  character      Character?    @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  voiceProfile   VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([projectId, sortOrder])
+  @@index([characterId])
+  @@index([voiceProfileId])
+}
+
+model StoryScene {
+  id                String       @id
+  projectId         String
+  sortOrder         Int
+  title             String
+  durationSeconds   Int
+  characters        String
+  location          String
+  action            String
+  dialogue          String?
+  expression        String
+  camera            String
+  audioMode         String
+  regenerationScope String
+  continuity        String?
+  promptSnapshot    Json?
+  outputLayers      Json?
+  status            SceneStatus  @default(DRAFT)
+  version           Int          @default(1)
+  project           StoryProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@unique([projectId, sortOrder])
+  @@index([projectId, status])
 }

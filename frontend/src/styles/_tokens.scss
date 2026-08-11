@@ -1,0 +1,33 @@
+$ink: #171321;
+$muted: #666273;
+$paper: #fffdf9;
+$canvas: #fbf6ee;
+$line: #ded5c8;
+$coral: #ff624d;
+$mint: #55cdbd;
+$violet: #7152f3;
+$gold: #ffc94a;
+$shadow-soft: 0 18px 50px rgba(39, 26, 14, 0.09);
+$shadow-lift: 0 24px 70px rgba(39, 26, 14, 0.14);
+$radius-sm: 14px;
+$radius-md: 22px;
+$radius-lg: 34px;
+
+@mixin focus-ring($color: $violet) {
+  outline: 3px solid rgba($color, 0.24);
+  outline-offset: 2px;
+}
+
+@mixin panel {
+  background: $paper;
+  border: 1px solid $line;
+  border-radius: $radius-md;
+  box-shadow: $shadow-soft;
+}
+
+@mixin readable-label {
+  color: $ink;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+}

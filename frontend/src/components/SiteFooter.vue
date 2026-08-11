@@ -14,6 +14,7 @@
         <RouterLink to="/characters">Character lab</RouterLink>
         <RouterLink to="/voices">Voice library</RouterLink>
         <RouterLink to="/story-studio">Story studio</RouterLink>
+        <RouterLink to="/roadmap">How it works</RouterLink>
       </div>
       <div class="footer-links">
         <strong>Explore</strong>

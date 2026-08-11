@@ -38,7 +38,8 @@ export const characterCatalog = worlds.flatMap((world, worldIndex) => (
     setting: world.setting,
     mark: `${worldIndex + 1}${String.fromCharCode(65 + archetypeIndex)}`,
     color: world.color,
-    status: worldIndex === 0 && archetypeIndex < 3 ? 'live' : 'concept',
+    artIndex: archetypeIndex < 2 ? worldIndex * 2 + archetypeIndex : null,
+    status: archetypeIndex < 2 ? 'art-ready' : 'concept',
   }))
 ));
 
@@ -99,7 +100,7 @@ const roadmapVoices = voiceRegions.flatMap(([regionId, language, region], region
 export const voiceCatalog = [
   ...liveVoices,
   ...roadmapVoices.filter((voice) => !liveVoices.some((live) => live.id === voice.id)),
-];
+].map((voice, index) => ({ ...voice, artIndex: index < 4 ? index : voiceDirections.findIndex(([directionId]) => voice.id.endsWith(directionId)) }));
 
 export const languageSamples = [
   'Hindi', 'Bhojpuri', 'Kannada', 'Tamil', 'Telugu', 'Bengali', 'Punjabi', 'Marathi',

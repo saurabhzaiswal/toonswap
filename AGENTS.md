@@ -42,6 +42,24 @@ change:
 - Identity: no accounts or passwords. A UUIDv7 job/session ID is the anonymous
   session identifier.
 
+## Current studio foundation
+
+- Secondary product routes use the shared custom UI primitives under
+  `frontend/src/components/ui/`. Extend these components instead of adding
+  one-off raw input or dropdown styling.
+- Tailwind remains the utility layer; scoped SCSS and
+  `frontend/src/styles/_tokens.scss` provide component design tokens.
+- The illustrated atlases in `frontend/public/art/` are original ToonSwap
+  concept assets. Preserve the original-IP boundary when replacing them.
+- Story Studio has Simple and Creator modes. Simple mode must remain usable for
+  children and older first-time creators; advanced controls stay progressive.
+- `StoryProject`, `StoryScene`, `StoryCharacter`, `Character`, and
+  `VoiceProfile` are the scalable studio records. Do not expand `MemeJob` into a
+  catch-all for long-form production.
+- `/api/studio/capabilities` is the honest readiness contract. Do not label
+  generation, voice synthesis, or rendering as live until provider, safety,
+  cost, and queue paths are actually connected.
+
 Do not introduce a new framework, database, queue, storage layer, authentication
 system, or paid provider without discussing the tradeoff with the owner first.
 Keep secrets server-side and out of source control and frontend bundles.
@@ -67,14 +85,17 @@ Treat this as the current priority order. Confirm with the owner which item to
 start before beginning backlog implementation; documentation and narrowly
 requested maintenance do not require that confirmation.
 
-1. Razorpay paywall: order creation, verified/idempotent webhook handling,
+1. Moderated multilingual story planner, provider adapters, and resumable
+   scene/shot render queues behind the current production gates.
+2. Native-review language program and seeded character/voice catalog records.
+3. Razorpay paywall: order creation, verified/idempotent webhook handling,
    Rs.19 single-video and Rs.49 day-pass rules, and clean re-render/download.
-2. Deployment: backend plus PostgreSQL/Redis on Render or Railway, frontend on
+4. Deployment: backend plus PostgreSQL/Redis on Render or Railway, frontend on
    Vercel, and CORS/API environment wiring.
-3. Capacitor packaging for Android and iOS after the web build is stable.
-4. Replace regex-only moderation with a production moderation service.
-5. Add anonymous-session/IP rate limits and abuse/cost controls.
-6. Define and implement automatic retention/deletion for source and generated
+5. Capacitor packaging for Android and iOS after the web build is stable.
+6. Replace regex-only moderation with a production moderation service.
+7. Add anonymous-session/IP rate limits and abuse/cost controls.
+8. Define and implement automatic retention/deletion for source and generated
    media.
 
 Cross-cutting launch work also includes age/consent, legal documents, spend
@@ -90,4 +111,3 @@ alerts, generate-request idempotency, and structured worker error reporting.
 - Add or update tests for changed behavior and run the smallest relevant checks
   before handoff. Report checks that could not be run and why.
 - Update setup or environment documentation when configuration changes.
-

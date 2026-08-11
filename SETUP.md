@@ -90,15 +90,15 @@ Then create the Prisma client and local schema and start NestJS:
 
 ```bash
 npx prisma generate
-npx prisma migrate dev --name init
+npx prisma migrate dev --name studio-foundation
+npx prisma db seed
 npm run start:dev
 ```
 
-The API listens on `http://localhost:3000`; routes are under `/api/meme`.
-
-The current source imports `@aws-sdk/client-s3`. If a clean backend install
-reports that module as missing, add it to the backend dependencies and commit the
-resulting `package.json`/lockfile update rather than relying on a global package.
+The API listens on `http://localhost:3000`. Short-form generation routes are
+under `/api/meme`; scalable story/catalog routes are under `/api/studio`.
+`GET /api/studio/capabilities` reports which production capabilities are real
+and which still require provider integration.
 
 ### 3. Configure and start the frontend
 
@@ -111,8 +111,10 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. Vite proxies `/api` to
-`http://localhost:3000`, so the frontend needs no local environment variable in
-the current implementation.
+`http://localhost:3000`. The routed app includes `/characters`, `/voices`,
+`/story-studio`, `/roadmap`, `/blog`, and policy pages. Story drafts currently
+save in browser storage; durable project writes use the studio API once wired in
+the frontend deployment.
 
 ### 4. Provider credentials and safe testing
 

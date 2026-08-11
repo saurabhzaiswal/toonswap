@@ -1,0 +1,44 @@
+@use './tokens' as *;
+
+:root {
+  --type-xs: 0.8rem;
+  --type-sm: 0.92rem;
+  --type-body: clamp(1rem, 0.96rem + 0.18vw, 1.12rem);
+  --type-h3: clamp(1.3rem, 1.18rem + 0.55vw, 1.72rem);
+  --type-h2: clamp(2rem, 1.65rem + 1.5vw, 3.45rem);
+  --type-display: clamp(3rem, 2.25rem + 3.5vw, 6.2rem);
+  --control-height: 54px;
+  --content-width: 1180px;
+  --page-gutter: clamp(20px, 5vw, 72px);
+}
+
+html { font-size: 16px; }
+
+.platform-shell {
+  background: $canvas;
+  color: $ink;
+}
+
+.platform-main p,
+.platform-main button,
+.platform-main input,
+.platform-main select,
+.platform-main textarea { font-size: 1rem; }
+
+.platform-main h1,
+.platform-main h2,
+.platform-main h3 { text-wrap: balance; }
+
+.platform-status { font-size: 0.84rem !important; padding: 10px 14px !important; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

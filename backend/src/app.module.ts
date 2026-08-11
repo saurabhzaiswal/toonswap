@@ -3,10 +3,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { AppConfigModule } from './config/config.module';
 import { MemeModule } from './meme/meme.module';
+import { DatabaseModule } from './database/database.module';
+import { StudioModule } from './studio/studio.module';
 
 @Module({
   imports: [
     AppConfigModule,
+    DatabaseModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -19,6 +22,7 @@ import { MemeModule } from './meme/meme.module';
       }),
     }),
     MemeModule,
+    StudioModule,
   ],
 })
 export class AppModule {}
