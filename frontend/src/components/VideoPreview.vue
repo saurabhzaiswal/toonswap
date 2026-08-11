@@ -15,18 +15,33 @@ const loadingLines = {
   <section v-if="store.status !== 'idle'" class="result-panel" aria-live="polite">
     <div v-if="store.isProcessing" class="result-loading">
       <div class="loading-orbit" aria-hidden="true"><span>T</span></div>
-      <div><h3>{{ (loadingLines[store.status] || ['Making magic'])[0] }}</h3><p>{{ (loadingLines[store.status] || ['', 'This can take a moment.'])[1] }}</p></div>
+      <div>
+        <h3>{{ (loadingLines[store.status] || ['Making magic'])[0] }}</h3>
+        <p>{{ (loadingLines[store.status] || ['', 'This can take a moment.'])[1] }}</p>
+      </div>
       <span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
     </div>
 
     <div v-else-if="store.status === 'DONE'" class="result-ready">
-      <div><p class="kicker">Ready to make someone smile</p><h3>Your toon has arrived.</h3></div>
+      <div>
+        <p class="kicker">Ready to make someone smile</p>
+        <h3>Your toon has arrived.</h3>
+      </div>
       <video :src="store.outputUrl" controls autoplay loop playsinline />
-      <div class="result-actions"><AppButton :href="store.outputUrl" download="" variant="primary"><template #icon>↓</template>Download preview</AppButton><AppButton variant="outline" @click="store.reset()">Make another</AppButton></div>
+      <div class="result-actions">
+        <AppButton :href="store.outputUrl" download="" variant="primary"
+          ><template #icon>↓</template>Download preview</AppButton
+        ><AppButton variant="outline" @click="store.reset()">Make another</AppButton>
+      </div>
     </div>
 
     <div v-else-if="store.status === 'FAILED'" class="result-error">
-      <span aria-hidden="true">!</span><div><h3>That take did not land.</h3><p>{{ store.errorMessage }}</p></div><AppButton variant="outline" @click="store.reset()">Try again</AppButton>
+      <span aria-hidden="true">!</span>
+      <div>
+        <h3>That take did not land.</h3>
+        <p>{{ store.errorMessage }}</p>
+      </div>
+      <AppButton variant="outline" @click="store.reset()">Try again</AppButton>
     </div>
   </section>
 </template>

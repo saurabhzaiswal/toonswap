@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import 'vue-select/dist/vue-select.css';
 import RouterRoot from './RouterRoot.vue';
 import './style.css';
 import './styles/base.scss';

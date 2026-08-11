@@ -12,7 +12,12 @@ export class CharacterCatalogService {
     const skip = Math.max(0, Number(offset) || 0);
     const where = catalogStatus ? { status: catalogStatus } : {};
     const [items, total] = await this.prisma.$transaction([
-      this.prisma.character.findMany({ where, take, skip, orderBy: [{ status: 'asc' }, { name: 'asc' }] }),
+      this.prisma.character.findMany({
+        where,
+        take,
+        skip,
+        orderBy: [{ status: 'asc' }, { name: 'asc' }],
+      }),
       this.prisma.character.count({ where }),
     ]);
     return { items, total, limit: take, offset: skip };
@@ -21,7 +26,8 @@ export class CharacterCatalogService {
   private catalogStatus(status?: string): CatalogStatus | undefined {
     if (!status) return undefined;
     const candidate = status.toUpperCase() as CatalogStatus;
-    if (!Object.values(CatalogStatus).includes(candidate)) throw new BadRequestException('invalid catalog status');
+    if (!Object.values(CatalogStatus).includes(candidate))
+      throw new BadRequestException('invalid catalog status');
     return candidate;
   }
 }

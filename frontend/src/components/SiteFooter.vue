@@ -25,7 +25,10 @@
       </div>
       <div class="footer-note">
         <strong>Built for joy, never imitation.</strong>
-        <p>Use original characters, licensed media, and voices you own or have permission to use. ToonSwap does not support celebrity clones or copied cartoon identities.</p>
+        <p>
+          Use original characters, licensed media, and voices you own or have permission to use.
+          ToonSwap does not support celebrity clones or copied cartoon identities.
+        </p>
       </div>
     </div>
     <div class="footer-bottom">

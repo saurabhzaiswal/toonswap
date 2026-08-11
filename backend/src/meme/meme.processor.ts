@@ -14,7 +14,8 @@ import { MEME_QUEUE_NAME } from './meme.service';
 
 // Maps our internal (original, non-infringing) character names to their
 // base template video + reference voice-model asset stored in our bucket.
-const TEMPLATE_ASSET_BASE_URL = process.env.TEMPLATE_ASSET_BASE_URL || 'https://toonswap.vercel.app';
+const TEMPLATE_ASSET_BASE_URL =
+  process.env.TEMPLATE_ASSET_BASE_URL || 'https://toonswap.vercel.app';
 const CHARACTER_TEMPLATES: Record<string, { templateVideoUrl: string; voiceModelId: string }> = {
   'chulbul-the-naughty-kid': {
     templateVideoUrl: `${TEMPLATE_ASSET_BASE_URL}/templates/chulbul_base.mp4`,
@@ -86,7 +87,9 @@ export class MemeProcessor extends WorkerHost {
         ? (faceSwapOutput[0] as string)
         : (faceSwapOutput as unknown as string);
 
-      this.logger.log(`[${jobId}] generating voice track (${record.voiceUrl ? 'speech-to-speech' : `regional TTS: ${record.voiceStyle}`})`);
+      this.logger.log(
+        `[${jobId}] generating voice track (${record.voiceUrl ? 'speech-to-speech' : `regional TTS: ${record.voiceStyle}`})`,
+      );
       const audioBuffer = record.voiceUrl
         ? await this.convertVoice({
             voiceModelId: template.voiceModelId,

@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["http://localhost:4173", "https://toonswap.vercel.app"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]

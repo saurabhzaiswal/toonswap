@@ -10,6 +10,11 @@ export class ModerationService {
   }
 
   capabilities() {
-    return { textFilter: 'regex-first-pass', imageModeration: 'not-connected', audioModeration: 'not-connected', productionReady: false };
+    return {
+      textFilter: 'regex-first-pass',
+      imageModeration: 'not-connected',
+      audioModeration: 'not-connected',
+      productionReady: false,
+    };
   }
 }

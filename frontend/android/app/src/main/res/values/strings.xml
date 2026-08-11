@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ToonSwap</string>
+    <string name="title_activity_main">ToonSwap</string>
+    <string name="package_name">com.toonswap.studio</string>
+    <string name="custom_url_scheme">com.toonswap.studio</string>
+</resources>

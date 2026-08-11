@@ -1,0 +1,10 @@
+{
+  "name": "toonswap-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "format": "npm --prefix frontend run format && npm --prefix backend run format",
+    "format:check": "npm --prefix frontend run format:check && npm --prefix backend run format:check",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build"
+  }
+}

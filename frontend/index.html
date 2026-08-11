@@ -1,37 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fffaf2" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/logo-512.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="application-name" content="ToonSwap" />
     <meta name="apple-mobile-web-app-title" content="ToonSwap" />
-    <meta name="description" content="Create original AI cartoon videos with editable scenes, custom characters, consent-first voices, and a worldwide language roadmap." />
+    <meta
+      name="description"
+      content="Create original AI cartoon videos with custom characters, editable scenes, consent-first voices, and multilingual story planning from 15 seconds to 60 minutes."
+    />
     <meta name="author" content="ToonSwap" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="bingbot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="canonical" href="https://toonswap.vercel.app/" />
+    <link rel="alternate" hreflang="en" href="https://toonswap.vercel.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://toonswap.vercel.app/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+    <link rel="alternate" type="text/plain" title="AI-readable site summary" href="/llms.txt" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToonSwap" />
     <meta property="og:url" content="https://toonswap.vercel.app/" />
     <meta property="og:locale" content="en_IN" />
     <meta property="og:title" content="ToonSwap — Turn Your Selfie Into a Cartoon Comedy Video" />
-    <meta property="og:description" content="Create joyful, shareable cartoon videos with your selfie, original characters, and culturally inspired regional comedy voices." />
+    <meta
+      property="og:description"
+      content="Create joyful, shareable cartoon videos with your selfie, original characters, and culturally inspired regional comedy voices."
+    />
     <meta property="og:image" content="https://toonswap.vercel.app/og.png" />
     <meta property="og:image:secure_url" content="https://toonswap.vercel.app/og.png" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1728" />
-    <meta property="og:image:height" content="907" />
-    <meta property="og:image:alt" content="Three original ToonSwap characters with the message Your face. Their world." />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="315" />
+    <meta
+      property="og:image:alt"
+      content="Three original ToonSwap characters with the message Your face. Their world."
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ToonSwap — Turn Your Selfie Into a Cartoon Comedy Video" />
-    <meta name="twitter:description" content="Create joyful, shareable cartoon videos with original characters and regional comedy voices." />
+    <meta
+      name="twitter:description"
+      content="Create joyful, shareable cartoon videos with original characters and regional comedy voices."
+    />
     <meta name="twitter:image" content="https://toonswap.vercel.app/og.png" />
-    <meta name="twitter:image:alt" content="Three original ToonSwap characters with the message Your face. Their world." />
-    <script type="application/ld+json">
+    <meta
+      name="twitter:image:alt"
+      content="Three original ToonSwap characters with the message Your face. Their world."
+    />
+    <script id="toonswap-route-schema" type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
@@ -40,7 +72,12 @@
             "@id": "https://toonswap.vercel.app/#organization",
             "name": "ToonSwap",
             "url": "https://toonswap.vercel.app/",
-            "logo": "https://toonswap.vercel.app/favicon.svg",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://toonswap.vercel.app/logo-512.png",
+              "width": 1024,
+              "height": 1024
+            },
             "image": "https://toonswap.vercel.app/og.png",
             "description": "ToonSwap creates joyful cartoon comedy videos using original characters and original regional voice designs."
           },
@@ -54,7 +91,7 @@
             "publisher": { "@id": "https://toonswap.vercel.app/#organization" }
           },
           {
-            "@type": "WebApplication",
+            "@type": "SoftwareApplication",
             "@id": "https://toonswap.vercel.app/#app",
             "name": "ToonSwap",
             "url": "https://toonswap.vercel.app/",
@@ -81,9 +118,13 @@
         ]
       }
     </script>
-    <title>ToonSwap: AI Cartoon Video Maker with Regional Voices</title>
+    <title>ToonSwap AI Cartoon Video Maker | Original Characters & Voices</title>
   </head>
   <body>
+    <noscript>
+      ToonSwap helps people plan original cartoon stories, characters, voices, and editable scenes.
+      Please enable JavaScript to use the interactive creator.
+    </noscript>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

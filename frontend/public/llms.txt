@@ -1,0 +1,25 @@
+# ToonSwap
+
+> ToonSwap is an original-character cartoon story and video-planning application. The current public product is a production-oriented foundation; it does not claim that every generative provider or all 200+ planned languages are live.
+
+Canonical site: https://toonswap.vercel.app/
+Sitemap: https://toonswap.vercel.app/sitemap.xml
+
+## Public sections
+
+- Home and guided quick creator: https://toonswap.vercel.app/
+- 216 original character records: https://toonswap.vercel.app/characters
+- Visual voice-direction library: https://toonswap.vercel.app/voices
+- Six-step scene Story Studio: https://toonswap.vercel.app/story-studio
+- Product and production roadmap: https://toonswap.vercel.app/roadmap
+- Original storytelling guides: https://toonswap.vercel.app/blog
+- Privacy: https://toonswap.vercel.app/privacy
+- Terms: https://toonswap.vercel.app/terms
+- Community guidelines: https://toonswap.vercel.app/community-guidelines
+
+## Content and safety notes
+
+- ToonSwap uses original characters and does not offer copies of famous copyrighted cartoon identities.
+- Selfie and voice features require ownership or permission and are designed around consent and private media handling.
+- Current catalog counts distinguish illustrated assets from structured blueprints.
+- Language, voice, rendering, and long-form production capabilities marked as roadmap are not represented as live.

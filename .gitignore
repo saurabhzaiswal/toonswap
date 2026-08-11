@@ -69,7 +69,15 @@ Desktop.ini
 .vercel/
 .wrangler/
 
+# Capacitor generated build state (native source projects remain tracked)
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/local.properties
+frontend/ios/App/Pods/
+frontend/ios/App/App/public/
+frontend/ios/DerivedData/
+
 # Test artifacts
 playwright-report/
 test-results/
-

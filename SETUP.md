@@ -122,6 +122,47 @@ Open `http://localhost:5173`. Vite proxies `/api` to
 save in browser storage; durable project writes use the studio API once wired in
 the frontend deployment.
 
+### Format the frontend and backend
+
+Prettier is installed in both packages. From the repository root, format both
+codebases with one command:
+
+```bash
+npm run format
+```
+
+Use `npm run format:check` in CI when files should be checked without rewriting
+them. The same commands can also be run inside either `frontend/` or `backend/`
+to target only that package. Generated builds, native dependency output,
+migrations, and lockfiles are excluded from formatting.
+
+### Build the Capacitor mobile apps
+
+Capacitor 8 is configured in `frontend/capacitor.config.json`; the tracked
+native projects live in `frontend/android/` and `frontend/ios/`. Install Android
+Studio for Android development. An iOS build requires macOS with Xcode even
+though its source project can be synced from Windows.
+
+After changing the web app, copy the latest production bundle and native plugin
+configuration into both projects:
+
+```bash
+cd frontend
+npm run mobile:sync
+```
+
+The generated Android/iOS app icons and light/dark splash screens use
+`frontend/assets/logo.svg`, matching the web header/favicon smile mark. Keep
+that source when regenerating assets; review the generator's dependency audit
+before temporarily installing any native asset tool.
+
+Open a native project with `npm run mobile:android` or, on macOS,
+`npm run mobile:ios`. The mobile wrapper uses the same consent, private-media,
+and API rules as the web app; configure the production API origin/reverse proxy
+before shipping. Capacitor-generated web bundles, Gradle output, Pods, local
+Android SDK paths, and derived iOS data are Git-ignored, while native source and
+configuration remain tracked.
+
 ### 4. Provider credentials and safe testing
 
 - Create a dedicated development token in the
@@ -227,19 +268,36 @@ separate.
 
 ### Frontend API routing
 
-The frontend uses `VITE_API_BASE_URL` as the backend origin and appends `/api/meme` or `/api/self-insert`. For production, choose
+The frontend uses `VITE_API_BASE_URL` as the backend origin when provided; otherwise it calls same-origin `/api`. The checked-in Vercel function at `frontend/api/[...path].js` forwards that path to the Nest service using the server-only `BACKEND_ORIGIN` environment variable. Set `BACKEND_ORIGIN` in Vercel to the deployed Nest origin without a trailing `/api`; never expose it as a secret-bearing `VITE_*` value. For production, choose
 one of these approaches before deployment:
 
-1. Add a Vercel rewrite from `/api/:path*` to the deployed backend. This keeps
-   the current frontend unchanged and gives the browser a same-origin API path.
+1. Use the checked-in Vercel API proxy and set `BACKEND_ORIGIN`. This keeps the browser on a same-origin `/api` path and supports session-protected private media responses.
 2. Set `VITE_API_BASE_URL` at build time to the backend origin. The store already
    reads this value. Add the frontend origin to backend `FRONTEND_ORIGIN` CORS
    handling as needed, and never put secrets in a `VITE_*` variable.
 
 The frontend now supports the second option through `frontend/.env.example`.
 Set `VITE_API_BASE_URL` in the Vercel project to the deployed NestJS origin. The
-checked-in `frontend/vercel.json` also sends direct visits to Vue Router pages
-such as `/characters`, `/story-studio`, and `/blog/...` back to `index.html`.
+checked-in `frontend/vercel.json` serves route-specific pre-rendered HTML for
+all 15 public Vue Router URLs, then falls back to the root app shell for unknown
+client routes. Direct visits and social/search crawlers therefore receive the
+correct title, canonical, social metadata, and JSON-LD before JavaScript runs.
+
+### SEO deployment checks
+
+The frontend build runs `frontend/scripts/prerender-seo.mjs` after Vite. Before
+publishing, confirm that `frontend/dist` contains route folders for characters,
+voices, Story Studio, roadmap, blog articles, and the three legal pages. After
+Vercel deploys, check these public files and representative routes:
+
+- `https://toonswap.vercel.app/robots.txt`
+- `https://toonswap.vercel.app/sitemap.xml`
+- `https://toonswap.vercel.app/characters`
+- `https://toonswap.vercel.app/blog/original-characters-without-copying`
+
+Submit the sitemap in Google Search Console after the first production deploy.
+Do not add fake ratings, prices, testimonials, or publication dates merely to
+seek a rich result.
 
 Do not deploy the current relative API path without either a rewrite or a code
 change; Vercel would otherwise look for the NestJS route in the frontend
@@ -260,21 +318,20 @@ deployment.
 ### S3/R2 bucket, private identity media, public outputs, and CORS
 
 For R2, create separate staging and production buckets and scoped write
-credentials. Keep self-insert selfie, voice, and generated identity-reference keys private; the backend signs provider reads for a short window and removes expired records through the retention queue. Set `S3_ENDPOINT` to the account's S3 API endpoint, `S3_REGION` to
+credentials. Keep self-insert selfie, voice, and generated identity-reference keys private. The self-insert flow now creates its consent/database record first, issues 10-minute content-type-bound PUT URLs for Uppy, verifies each object with `HEAD`, and only then finalizes or queues the reusable reference. Expired source objects are removed by the 24-hour retention queue. Set `S3_ENDPOINT` to the account's S3 API endpoint, `S3_REGION` to
 `auto`, and `S3_PUBLIC_BASE_URL` to the read domain for non-sensitive preview outputs only. Cloudflare recommends an R2
 custom domain for production; its `r2.dev` URL is intended for development
 traffic. See [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 
-Allow only the frontend origins that need to play/download objects. A minimal
-read policy is:
+Direct browser PUTs still require an R2 CORS rule even though the URL is signed. Use `backend/r2-cors.example.json` as the checked-in starting point and replace its origins with the exact deployed frontend origins. A minimal upload policy is:
 
 ```json
 [
   {
-    "AllowedOrigins": ["https://app.example.com"],
-    "AllowedMethods": ["GET", "HEAD"],
-    "AllowedHeaders": [],
-    "ExposeHeaders": ["Content-Length", "Content-Type", "ETag"],
+    "AllowedOrigins": ["https://toonswap.vercel.app"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
   }
 ]
@@ -284,10 +341,7 @@ Apply the policy in the bucket settings and verify from the real frontend
 origin; origin values must match exactly. Cloudflare's current instructions are
 in [Configure CORS](https://developers.cloudflare.com/r2/buckets/cors/).
 
-The storage service currently sends `ACL: public-read`. R2 public access is
-configured at the bucket/custom-domain layer, and S3-compatible providers differ
-in ACL support. Test an upload during staging and remove or adapt that option if
-the selected provider rejects it.
+Private media is streamed through `GET /api/self-insert/assets/:assetId/media/:kind` only after the caller supplies the matching anonymous `x-toonswap-session` header. The response uses `private, no-store`; raw R2 read URLs are not returned to the UI. PUT URLs are short-lived bearer tokens and should never be logged. For a same-origin browser path, route the frontend's `/api/*` through Vercel to the Nest service; otherwise `VITE_API_BASE_URL` must point to an app-owned API hostname. Do not make the self-insert prefix public through an R2 custom domain.
 
 ### Release verification
 

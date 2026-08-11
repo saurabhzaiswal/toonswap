@@ -33,4 +33,5 @@ export function buildVoiceAvatarPrompt(brief: VoiceAvatarBrief) {
   return `${sharedStyleGuide}. Original fictional voice-direction portrait called ${brief.persona}. Cultural context: ${brief.region}; do not stereotype clothing, facial features, or props. Expression: ${brief.expression}. Energy: ${brief.energy}. Age feeling: ${brief.ageFeel}. Head-and-shoulders performance portrait, direct gaze, mouth and eyebrows clearly readable, simple contrasting background.`;
 }
 
-export const characterArtNegativePrompt = 'existing cartoon, famous mascot, trademark, franchise symbol, celebrity, real public figure, near-copy, text, watermark, extra fingers, duplicate face';
+export const characterArtNegativePrompt =
+  'existing cartoon, famous mascot, trademark, franchise symbol, celebrity, real public figure, near-copy, text, watermark, extra fingers, duplicate face';

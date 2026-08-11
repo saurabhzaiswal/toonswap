@@ -1,0 +1,8 @@
+{
+  "appId": "com.toonswap.studio",
+  "appName": "ToonSwap",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

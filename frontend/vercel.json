@@ -1,5 +1,41 @@
 {
+  "trailingSlash": false,
   "rewrites": [
+    { "source": "/characters", "destination": "/characters/index.html" },
+    { "source": "/voices", "destination": "/voices/index.html" },
+    { "source": "/story-studio", "destination": "/story-studio/index.html" },
+    { "source": "/roadmap", "destination": "/roadmap/index.html" },
+    { "source": "/blog", "destination": "/blog/index.html" },
+    {
+      "source": "/blog/original-characters-without-copying",
+      "destination": "/blog/original-characters-without-copying/index.html"
+    },
+    {
+      "source": "/blog/directing-comedy-across-languages",
+      "destination": "/blog/directing-comedy-across-languages/index.html"
+    },
+    {
+      "source": "/blog/scene-by-scene-animation-workflow",
+      "destination": "/blog/scene-by-scene-animation-workflow/index.html"
+    },
+    {
+      "source": "/blog/consent-first-family-stories",
+      "destination": "/blog/consent-first-family-stories/index.html"
+    },
+    {
+      "source": "/blog/designing-stone-to-space-worlds",
+      "destination": "/blog/designing-stone-to-space-worlds/index.html"
+    },
+    {
+      "source": "/blog/one-hour-animation-cost-plan",
+      "destination": "/blog/one-hour-animation-cost-plan/index.html"
+    },
+    { "source": "/privacy", "destination": "/privacy/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" },
+    {
+      "source": "/community-guidelines",
+      "destination": "/community-guidelines/index.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

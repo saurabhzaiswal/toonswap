@@ -27,24 +27,51 @@
   --page-gutter: clamp(20px, 5vw, 72px);
 }
 
-html { font-size: 16px; }
+html {
+  font-size: 16px;
+}
 
 .platform-shell {
   background: $canvas;
   color: $ink;
 }
 
+.platform-main,
+.platform-main > *,
+.platform-main section,
+.platform-main article,
+.platform-main aside,
+.platform-main form {
+  min-width: 0;
+}
+
 .platform-main p,
 .platform-main button,
 .platform-main input,
 .platform-main select,
-.platform-main textarea { font-size: 1rem; }
+.platform-main textarea {
+  font-size: 1rem;
+}
 
 .platform-main h1,
 .platform-main h2,
-.platform-main h3 { text-wrap: balance; }
+.platform-main h3 {
+  text-wrap: balance;
+}
 
-.platform-status { font-size: 0.84rem !important; padding: 10px 14px !important; }
+.platform-main h1,
+.platform-main h2,
+.platform-main h3,
+.platform-main p,
+.platform-main li,
+.platform-main a {
+  overflow-wrap: anywhere;
+}
+
+.platform-status {
+  font-size: 0.84rem !important;
+  padding: 10px 14px !important;
+}
 
 .visually-hidden {
   position: absolute;

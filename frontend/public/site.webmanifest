@@ -1,9 +1,12 @@
 {
   "name": "ToonSwap — Cartoon Video Maker",
   "short_name": "ToonSwap",
+  "id": "/",
   "description": "Create shareable cartoon comedy videos with original characters and regional voices.",
   "start_url": "/",
   "display": "standalone",
+  "scope": "/",
+  "orientation": "any",
   "background_color": "#fffaf2",
   "theme_color": "#ff624d",
   "icons": [
@@ -12,6 +15,13 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["entertainment", "photo", "video", "productivity"]
 }

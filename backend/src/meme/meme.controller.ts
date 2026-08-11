@@ -43,10 +43,7 @@ export class MemeController {
       { limits: { fileSize: MAX_FILE_BYTES } },
     ),
   )
-  async generate(
-    @Body() body: GenerateMemeBody,
-    @UploadedFiles() files: UploadedMemeFiles,
-  ) {
+  async generate(@Body() body: GenerateMemeBody, @UploadedFiles() files: UploadedMemeFiles) {
     if (!body.character) {
       throw new BadRequestException('character is required');
     }
@@ -73,7 +70,9 @@ export class MemeController {
     if (!voice) {
       const voiceStyle = body.voiceStyle;
       if (!voiceStyle || !VOICE_PRESETS[voiceStyle]) {
-        throw new BadRequestException('a valid voiceStyle is required when not recording your own voice');
+        throw new BadRequestException(
+          'a valid voiceStyle is required when not recording your own voice',
+        );
       }
       const check = checkScriptText(body.scriptText as string);
       if (!check.allowed) {

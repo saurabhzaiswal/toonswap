@@ -7,7 +7,9 @@
     "start": "node dist/main",
     "start:dev": "nest start --watch",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.js\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"prisma/**/*.js\" \"*.{json,md}\""
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -38,6 +40,7 @@
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.5.0",
+    "prettier": "^3.9.6",
     "prisma": "^5.19.0",
     "typescript": "^5.5.4"
   }

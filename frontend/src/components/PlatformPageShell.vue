@@ -23,7 +23,9 @@ defineProps({
           <p>{{ description }}</p>
           <div class="platform-status"><span></span>{{ status }}</div>
         </div>
-        <slot name="hero-media"><strong v-if="stat">{{ stat }}</strong></slot>
+        <slot name="hero-media"
+          ><strong v-if="stat">{{ stat }}</strong></slot
+        >
       </section>
       <slot />
     </main>

@@ -25,7 +25,7 @@ export default {
       fontSize: {
         'ui-xs': ['0.8rem', { lineHeight: '1.4' }],
         'ui-sm': ['0.92rem', { lineHeight: '1.5' }],
-        'ui': ['1rem', { lineHeight: '1.55' }],
+        ui: ['1rem', { lineHeight: '1.55' }],
         'ui-lg': ['1.18rem', { lineHeight: '1.5' }],
       },
       borderRadius: { toon: '22px', 'toon-lg': '34px' },
