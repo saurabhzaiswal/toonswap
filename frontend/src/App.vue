@@ -19,7 +19,7 @@ const voiceFilter = ref('all');
 
 const voiceRegions = [
   {
-    name: 'Bhojpuri Mischief',
+    name: 'Playful Storyteller',
     place: 'Purvanchal, India',
     sample: 'Warm · witty · live',
     mark: 'भो',
@@ -161,7 +161,7 @@ function chooseVoice(voice) {
           <div class="hero-scribble hero-scribble-two" aria-hidden="true"></div>
           <div class="speech-card speech-card-left">
             <span class="sound-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <div><strong>Bhojpuri mischief</strong><small>Original comedy voice</small></div>
+            <div><strong>Playful local voice</strong><small>Warm comedy direction</small></div>
           </div>
           <div class="speech-card speech-card-right">
             <b>200+</b><span>language<br />roadmap</span>
@@ -178,7 +178,7 @@ function chooseVoice(voice) {
               <span class="toon-band"></span><b>N</b><small>NINJA CHOTU</small>
             </div>
           </div>
-          <div class="floating-note">Made with <b>original characters</b> only</div>
+          <div class="floating-note"><b>Your story.</b> Your cast.</div>
         </div>
       </section>
 
