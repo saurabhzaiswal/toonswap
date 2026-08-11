@@ -115,7 +115,7 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
             auditable.</span
           >
         </div>
-        <AppButton variant="outline" to="/profile">My profile</AppButton>
+        <AppButton variant="outline" to="/app/profile">My profile</AppButton>
       </header>
       <section v-if="overview" class="metric-grid">
         <article>

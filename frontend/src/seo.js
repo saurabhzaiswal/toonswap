@@ -306,7 +306,7 @@ function routeGraph(route, details, canonicalUrl) {
         '@type': 'HowToStep',
         position: index + 1,
         name,
-        url: `${SITE_URL}/story-studio#step-${index + 1}`,
+        url: `${SITE_URL}/app/story-studio#step-${index + 1}`,
       })),
     });
   }
@@ -393,6 +393,12 @@ export function applySeo(route) {
   );
   setMetaName(
     'googlebot',
+    privatePage
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  );
+  setMetaName(
+    'bingbot',
     privatePage
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',

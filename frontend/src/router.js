@@ -12,20 +12,21 @@ const router = createRouter({
   },
   routes: [
     { path: '/', name: 'home', component: HomePage },
+    { path: '/app', redirect: { name: 'story-studio' } },
     {
-      path: '/characters',
+      path: '/app/characters',
       name: 'characters',
       component: () => import('./pages/CharactersPage.vue'),
       meta: { requiresAuth: true },
     },
     {
-      path: '/voices',
+      path: '/app/voices',
       name: 'voices',
       component: () => import('./pages/VoicesPage.vue'),
       meta: { requiresAuth: true },
     },
     {
-      path: '/story-studio',
+      path: '/app/story-studio',
       name: 'story-studio',
       component: () => import('./pages/StoryStudioPage.vue'),
       meta: { requiresAuth: true, requiresProfile: true },
@@ -51,13 +52,13 @@ const router = createRouter({
       meta: { guestOnly: true },
     },
     {
-      path: '/profile',
+      path: '/app/profile',
       name: 'profile',
       component: () => import('./pages/ProfilePage.vue'),
       meta: { requiresAuth: true },
     },
     {
-      path: '/admin',
+      path: '/app/admin',
       name: 'admin',
       component: () => import('./pages/AdminDashboardPage.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
@@ -80,6 +81,11 @@ const router = createRouter({
       component: () => import('./pages/LegalPage.vue'),
       props: { documentKey: 'community' },
     },
+    { path: '/characters', redirect: { name: 'characters' } },
+    { path: '/voices', redirect: { name: 'voices' } },
+    { path: '/story-studio', redirect: { name: 'story-studio' } },
+    { path: '/profile', redirect: { name: 'profile' } },
+    { path: '/admin', redirect: { name: 'admin' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 });
@@ -89,7 +95,7 @@ router.beforeEach(async (to) => {
   await auth.bootstrap();
   if (to.meta.requiresAuth && !auth.signedIn)
     return { name: 'login', query: { redirect: to.fullPath } };
-  if (to.meta.requiresAdmin && !auth.isAdmin) return { name: 'home' };
+  if (to.meta.requiresAdmin && !auth.isAdmin) return { name: 'story-studio' };
   if (to.meta.requiresProfile && auth.needsProfile)
     return { name: 'profile', query: { redirect: to.fullPath } };
   if (to.meta.guestOnly && auth.signedIn)

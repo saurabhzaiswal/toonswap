@@ -1,13 +1,13 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/characters", "destination": "/characters/index.html" },
-    { "source": "/voices", "destination": "/voices/index.html" },
-    { "source": "/story-studio", "destination": "/story-studio/index.html" },
+    { "source": "/app/characters", "destination": "/app/characters/index.html" },
+    { "source": "/app/voices", "destination": "/app/voices/index.html" },
+    { "source": "/app/story-studio", "destination": "/app/story-studio/index.html" },
     { "source": "/login", "destination": "/login/index.html" },
     { "source": "/signup", "destination": "/signup/index.html" },
-    { "source": "/profile", "destination": "/profile/index.html" },
-    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/app/profile", "destination": "/app/profile/index.html" },
+    { "source": "/app/admin", "destination": "/app/admin/index.html" },
     { "source": "/roadmap", "destination": "/roadmap/index.html" },
     { "source": "/blog", "destination": "/blog/index.html" },
     {

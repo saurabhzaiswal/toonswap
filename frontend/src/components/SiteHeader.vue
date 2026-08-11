@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import AppButton from './ui/AppButton.vue';
 import { useRouter } from 'vue-router';
@@ -14,12 +14,13 @@ const accountOpen = ref(false);
 
 const links = [
   { label: 'Create', to: '/#studio' },
-  { label: 'Characters', to: '/characters' },
-  { label: 'Voices', to: '/voices' },
-  { label: 'Story Studio', to: '/story-studio' },
+  { label: 'Characters', to: '/app/characters', requiresAuth: true },
+  { label: 'Voices', to: '/app/voices', requiresAuth: true },
+  { label: 'Story Studio', to: '/app/story-studio', requiresAuth: true },
   { label: 'Roadmap', to: '/roadmap' },
   { label: 'Blog', to: '/blog' },
 ];
+const visibleLinks = computed(() => links.filter((link) => !link.requiresAuth || auth.signedIn));
 
 function closeMenu() {
   menuOpen.value = false;
@@ -46,7 +47,7 @@ watch(() => route.fullPath, closeMenu);
 
       <nav class="desktop-nav platform-nav" aria-label="Main navigation">
         <RouterLink
-          v-for="link in links"
+          v-for="link in visibleLinks"
           :key="link.to"
           :to="link.to"
           :class="{ active: route.path === link.to }"
@@ -55,7 +56,6 @@ watch(() => route.fullPath, closeMenu);
       </nav>
 
       <div class="header-actions">
-        <span class="original-pill"><span></span> Original IP only</span>
         <template v-if="auth.signedIn">
           <div class="account-menu">
             <button
@@ -73,14 +73,14 @@ watch(() => route.fullPath, closeMenu);
             </button>
             <div v-if="accountOpen" class="account-popover">
               <small>{{ auth.user?.email }}</small>
-              <RouterLink to="/profile" @click="closeMenu">Profile & safety</RouterLink>
-              <RouterLink v-if="auth.isAdmin" to="/admin" @click="closeMenu"
+              <RouterLink to="/app/profile" @click="closeMenu">Profile & safety</RouterLink>
+              <RouterLink v-if="auth.isAdmin" to="/app/admin" @click="closeMenu"
                 >Admin dashboard</RouterLink
               >
               <button type="button" @click="signOut">Sign out</button>
             </div>
           </div>
-          <AppButton class="header-cta" to="/story-studio" variant="primary" size="sm"
+          <AppButton class="header-cta" to="/app/story-studio" variant="primary" size="sm"
             >Build a story</AppButton
           >
         </template>
@@ -110,17 +110,19 @@ watch(() => route.fullPath, closeMenu);
         class="mobile-nav platform-mobile-nav"
         aria-label="Mobile navigation"
       >
-        <RouterLink v-for="link in links" :key="link.to" :to="link.to" @click="closeMenu">{{
+        <RouterLink v-for="link in visibleLinks" :key="link.to" :to="link.to" @click="closeMenu">{{
           link.label
         }}</RouterLink>
         <RouterLink v-if="!auth.signedIn" to="/login" @click="closeMenu">Sign in</RouterLink>
         <RouterLink v-if="!auth.signedIn" to="/signup" @click="closeMenu"
           >Create account</RouterLink
         >
-        <RouterLink v-if="auth.signedIn" to="/profile" @click="closeMenu"
+        <RouterLink v-if="auth.signedIn" to="/app/profile" @click="closeMenu"
           >Profile & safety</RouterLink
         >
-        <RouterLink v-if="auth.isAdmin" to="/admin" @click="closeMenu">Admin dashboard</RouterLink>
+        <RouterLink v-if="auth.isAdmin" to="/app/admin" @click="closeMenu"
+          >Admin dashboard</RouterLink
+        >
         <button v-if="auth.signedIn" type="button" @click="signOut">Sign out</button>
         <RouterLink to="/privacy" @click="closeMenu">Privacy & safety</RouterLink>
       </nav>
@@ -307,10 +309,6 @@ watch(() => route.fullPath, closeMenu);
 
   .menu-button {
     display: inline-flex !important;
-  }
-
-  .original-pill {
-    display: none;
   }
 
   .account-menu,

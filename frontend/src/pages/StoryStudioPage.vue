@@ -340,7 +340,7 @@ function prepareBrief() {
                 them.
               </p>
             </div>
-            <RouterLink to="/characters">Design my own →</RouterLink>
+            <RouterLink to="/app/characters">Design my own →</RouterLink>
           </div>
           <div class="cast-grid">
             <AppButton
@@ -397,7 +397,7 @@ function prepareBrief() {
                   store.selectedVoice?.id === voice.id ? '✓ Selected' : 'Choose direction'
                 }}</b>
               </div></AppButton
-            ><RouterLink class="browse-voices" to="/voices"
+            ><RouterLink class="browse-voices" to="/app/voices"
               ><span>220</span>
               <h3>Explore the full voice roadmap</h3>
               <p>

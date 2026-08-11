@@ -114,7 +114,7 @@ const completion = computed(() => {
 
 function jumpToStudio() {
   if (!auth.signedIn) {
-    router.push({ name: 'signup', query: { redirect: '/#studio' } });
+    router.push({ name: 'signup', query: { redirect: '/app/story-studio' } });
     return;
   }
   document.querySelector('#studio')?.scrollIntoView({ behavior: 'smooth' });
@@ -221,7 +221,7 @@ function chooseVoice(voice) {
             Add the minimum information needed for account safety, regional settings, and the
             configured age policy.
           </p>
-          <div><AppButton to="/profile" arrow>Complete profile</AppButton></div>
+          <div><AppButton to="/app/profile" arrow>Complete profile</AppButton></div>
         </div>
         <div v-else class="creator-shell">
           <div class="creator-intro">

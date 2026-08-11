@@ -4,7 +4,7 @@ import { apiClient } from '../lib/api';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    config: null,
+    loginCsrf: '',
     policy: null,
     ready: false,
     busy: false,
@@ -20,17 +20,22 @@ export const useAuthStore = defineStore('auth', {
     async bootstrap() {
       if (this.ready) return this.user;
       try {
-        this.config = (await apiClient.get('/auth/config', { skipAuthRedirect: true })).data;
         const session = (await apiClient.get('/auth/session', { skipAuthRedirect: true })).data;
         this.user = session.user;
         this.policy = session.policy;
-      } catch (error) {
-        if (error.status !== 401) this.error = error.message;
+      } catch {
         this.user = null;
+        this.policy = null;
       } finally {
         this.ready = true;
       }
       return this.user;
+    },
+    async ensureLoginCsrf() {
+      if (this.loginCsrf) return this.loginCsrf;
+      const response = await apiClient.get('/auth/csrf', { skipAuthRedirect: true });
+      this.loginCsrf = response.data.token;
+      return this.loginCsrf;
     },
     async refresh() {
       const session = (await apiClient.get('/auth/session')).data;
@@ -42,14 +47,13 @@ export const useAuthStore = defineStore('auth', {
       this.busy = true;
       this.error = '';
       try {
-        if (!this.config?.loginCsrf)
-          this.config = (await apiClient.get('/auth/config', { skipAuthRedirect: true })).data;
+        const loginCsrf = await this.ensureLoginCsrf();
         this.challenge = (
           await apiClient.post(
             '/auth/otp/request',
             { email, purpose, turnstileToken },
             {
-              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              headers: { 'x-toonswap-login-csrf': loginCsrf },
               skipAuthRedirect: true,
             },
           )
@@ -75,7 +79,7 @@ export const useAuthStore = defineStore('auth', {
               code,
             },
             {
-              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              headers: { 'x-toonswap-login-csrf': this.loginCsrf },
               skipAuthRedirect: true,
             },
           )
@@ -94,12 +98,13 @@ export const useAuthStore = defineStore('auth', {
       this.busy = true;
       this.error = '';
       try {
+        const loginCsrf = await this.ensureLoginCsrf();
         const result = (
           await apiClient.post(
             '/auth/google',
             { credential, purpose, turnstileToken },
             {
-              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              headers: { 'x-toonswap-login-csrf': loginCsrf },
               skipAuthRedirect: true,
             },
           )

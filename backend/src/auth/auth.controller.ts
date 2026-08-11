@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthenticatedRequest } from './auth.types';
@@ -7,28 +6,15 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { GoogleCredentialDto, RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
 import { LoginCsrfGuard } from './guards/login-csrf.guard';
-import { TurnstileService } from './turnstile.service';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(
-    private readonly auth: AuthService,
-    private readonly config: ConfigService,
-    private readonly turnstile: TurnstileService,
-  ) {}
+  constructor(private readonly auth: AuthService) {}
 
   @Public()
-  @Get('config')
-  configResponse(@Res({ passthrough: true }) response: Response) {
-    return {
-      loginCsrf: this.auth.issueLoginCsrf(response),
-      otpEnabled: Boolean(
-        this.config.get<string>('SMTP_HOST') && this.config.get<string>('MAIL_FROM'),
-      ),
-      googleClientId: this.config.get<string>('GOOGLE_CLIENT_ID') || null,
-      turnstile: this.turnstile.configPayload(),
-      passkeys: 'roadmap',
-    };
+  @Get('csrf')
+  loginCsrf(@Res({ passthrough: true }) response: Response) {
+    return { token: this.auth.issueLoginCsrf(response) };
   }
 
   @Public()

@@ -40,6 +40,7 @@ const documents = {
         [
           'The current architecture may send necessary inputs to Replicate for visual processing, ElevenLabs for original voice generation or consented speech conversion, S3-compatible storage such as Cloudflare R2, hosting providers, PostgreSQL, and Redis.',
           'Cloudflare processes limited request and browser signals for Turnstile verification on sign-in and registration forms.',
+          'ToonSwap runs Turnstile in invisible mode for login abuse prevention. Cloudflare describes this processing in its Turnstile Privacy Addendum.',
           'Provider production terms, data-use settings, retention, training settings, subprocessors, and cross-border transfer safeguards must be reviewed and documented before launch.',
           'Do not include secrets, financial records, medical information, identity documents, or media you are not authorised to process.',
         ],
@@ -269,6 +270,15 @@ const document = computed(() => documents[props.documentKey] || documents.commun
           </section>
           <section class="legal-sources">
             <h2>Reference points for launch review</h2>
+            <p v-if="props.documentKey === 'privacy'">
+              Invisible account security is provided by Cloudflare Turnstile. Read the
+              <a
+                href="https://www.cloudflare.com/en-in/turnstile-privacy-policy/"
+                target="_blank"
+                rel="noreferrer"
+                >Cloudflare Turnstile Privacy Addendum</a
+              >.
+            </p>
             <p>
               Children’s face and voice data can receive special legal protection. Review the
               <a

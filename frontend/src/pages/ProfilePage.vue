@@ -156,7 +156,7 @@ onMounted(load);
           <AppButton type="submit" arrow :disabled="saving">{{
             saving ? 'Saving…' : 'Save profile'
           }}</AppButton
-          ><AppButton variant="outline" to="/story-studio">Open Story Studio</AppButton>
+          ><AppButton variant="outline" to="/app/story-studio">Open Story Studio</AppButton>
         </div>
       </form>
 

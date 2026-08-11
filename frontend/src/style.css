@@ -183,21 +183,6 @@ video {
   align-items: center;
   gap: 12px;
 }
-.original-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #625d69;
-  font-size: 11px;
-  font-weight: 750;
-}
-.original-pill span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--teal);
-  box-shadow: 0 0 0 4px rgba(37, 185, 167, 0.13);
-}
 .menu-button {
   display: none;
   width: 42px;
@@ -2313,8 +2298,7 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1100px) {
-  .desktop-nav,
-  .original-pill {
+  .desktop-nav {
     display: none;
   }
   .hero {

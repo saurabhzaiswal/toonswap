@@ -128,7 +128,7 @@ const phases = [
           <small>{{ item.state }}</small>
         </article>
       </div>
-      <AppButton class="start-link" to="/story-studio" variant="accent" arrow
+      <AppButton class="start-link" to="/app/story-studio" variant="accent" arrow
         >Try the guided Story Studio</AppButton
       >
     </section>
@@ -184,7 +184,7 @@ const phases = [
       <div class="guardrail-grid">
         <article>
           <span>◎</span>
-          <h3>Original IP only</h3>
+          <h3>Rights-safe creation</h3>
           <p>
             No duplicate cartoon identities, confusing lookalikes, copied logos, costumes, voices,
             lore, or franchise prompts.

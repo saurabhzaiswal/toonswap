@@ -81,7 +81,6 @@ SMTP_PASSWORD=<smtp-password>
 MAIL_FROM=ToonSwap <no-reply@example.com>
 GOOGLE_CLIENT_ID=
 BOOTSTRAP_ADMIN_EMAILS=your-verified-admin@example.com
-TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
 TURNSTILE_SECRET_KEY=<cloudflare-turnstile-secret-key>
 TURNSTILE_EXPECTED_HOSTNAME=localhost
 
@@ -114,6 +113,14 @@ S3_SECRET_KEY=
 TEMPLATE_ASSET_BASE_URL=https://toonswap-kappa.vercel.app
 ```
 
+Set the public Turnstile site key in `frontend/.env`:
+
+```dotenv
+VITE_TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
+VITE_GOOGLE_CLIENT_ID=<public-google-oauth-client-id>
+VITE_OTP_ENABLED=true
+```
+
 Then create the Prisma client and local schema and start NestJS:
 
 ```bash
@@ -130,15 +137,26 @@ records are preserved under a blocked system owner during the auth migration.
 
 `BOOTSTRAP_ADMIN_EMAILS` applies only when a verified account is first created.
 After your administrator account exists, clear that variable and use the
-role-protected `/admin` dashboard for later role changes.
+role-protected `/app/admin` dashboard for later role changes.
 
 Turnstile is mandatory for OTP requests and Google account access. Create a
-widget in Cloudflare, keep the secret only in the backend environment, and set
+widget in Cloudflare using Invisible mode, set its public site key as
+`VITE_TURNSTILE_SITE_KEY` in the
+frontend environment, keep the secret only in the backend environment, and set
 `TURNSTILE_EXPECTED_HOSTNAME` to the exact deployed host. For local/automated
 testing, use Cloudflare's published dummy site/secret key pair rather than a
 production secret. The backend always calls Siteverify; client-side success alone
 is never treated as authentication proof. Tokens are short-lived and single-use,
-so the UI resets the widget after each authentication attempt.
+so the UI executes Turnstile only when an email or Google authentication action
+is submitted and resets it after every attempt. Invisible mode must remain
+disclosed in the privacy policy through Cloudflare's Turnstile Privacy Addendum.
+
+Authenticated page URLs are `/app/characters`, `/app/voices`,
+`/app/story-studio`, `/app/profile`, and `/app/admin`. A complete profile lands
+on `/app/story-studio` after ordinary sign-in. A new or incomplete profile lands
+on `/app/profile`. When sign-in was triggered by a protected `/app` URL, the
+original destination is restored after authentication. Only the `ADMIN` role can
+open `/app/admin` or its backing `/api/admin` endpoints.
 
 Authenticated browser state is an opaque server-side session referenced by an
 httpOnly cookie. Axios sends credentialed same-origin requests and a readable,
@@ -186,8 +204,9 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. Vite proxies `/api` to
-`http://localhost:3000`. The routed app includes `/characters`, `/voices`,
-`/story-studio`, `/roadmap`, `/blog`, and policy pages. Story drafts currently
+`http://localhost:3000`. The protected workspace includes `/app/characters`,
+`/app/voices`, and `/app/story-studio`; public routes include `/roadmap`, `/blog`,
+and policy pages. Story drafts currently
 save in browser storage; durable project writes use the studio API once wired in
 the frontend deployment.
 
@@ -319,6 +338,10 @@ deleted after each job.
 - `PORT`: normally injected by the hosting platform.
 - `FRONTEND_ORIGIN`: exact Vercel/custom frontend origin. Multiple origins may
   be comma-separated; do not leave production CORS open with `*`.
+- `TURNSTILE_SECRET_KEY`: private Cloudflare verification secret. Never expose
+  it through a `VITE_*` variable or API response.
+- `TURNSTILE_EXPECTED_HOSTNAME`: exact frontend hostname accepted in successful
+  Turnstile verification responses.
 - `DATABASE_URL`: managed PostgreSQL URL; add the provider-required TLS options.
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`: persistent Redis connection.
   The current code does not parse `REDIS_URL` or configure Redis TLS, so add that
@@ -339,7 +362,7 @@ separate.
 
 ### Frontend API routing
 
-The frontend uses `VITE_API_BASE_URL` as the backend origin when provided; otherwise it calls same-origin `/api`. The checked-in Vercel function at `frontend/api/[...path].js` forwards that path to the Nest service using the server-only `BACKEND_ORIGIN` environment variable. Set `BACKEND_ORIGIN` in Vercel to the deployed Nest origin without a trailing `/api`; never expose it as a secret-bearing `VITE_*` value. For production, choose
+The frontend uses `VITE_API_BASE_URL` as the backend origin when provided; otherwise it calls same-origin `/api`. Set `VITE_TURNSTILE_SITE_KEY`, `VITE_GOOGLE_CLIENT_ID`, and `VITE_OTP_ENABLED` in Vercel. The checked-in Vercel function at `frontend/api/[...path].js` forwards that path to the Nest service using the server-only `BACKEND_ORIGIN` environment variable. Set `BACKEND_ORIGIN` in Vercel to the deployed Nest origin without a trailing `/api`; never expose it as a secret-bearing `VITE_*` value. For production, choose
 one of these approaches before deployment:
 
 1. Use the checked-in Vercel API proxy and set `BACKEND_ORIGIN`. This keeps the browser on a same-origin `/api` path and supports session-protected private media responses.
@@ -363,7 +386,7 @@ Vercel deploys, check these public files and representative routes:
 
 - `https://toonswap-kappa.vercel.app/robots.txt`
 - `https://toonswap-kappa.vercel.app/sitemap.xml`
-- `https://toonswap-kappa.vercel.app/characters`
+- `https://toonswap-kappa.vercel.app/app/characters`
 - `https://toonswap-kappa.vercel.app/blog/original-characters-without-copying`
 
 Submit the sitemap in Google Search Console after the first production deploy.

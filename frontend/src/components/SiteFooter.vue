@@ -11,9 +11,9 @@
       <div class="footer-links">
         <strong>Create</strong>
         <RouterLink to="/#studio">Quick toon</RouterLink>
-        <RouterLink to="/characters">Character lab</RouterLink>
-        <RouterLink to="/voices">Voice library</RouterLink>
-        <RouterLink to="/story-studio">Story studio</RouterLink>
+        <RouterLink to="/app/characters">Character lab</RouterLink>
+        <RouterLink to="/app/voices">Voice library</RouterLink>
+        <RouterLink to="/app/story-studio">Story studio</RouterLink>
         <RouterLink to="/roadmap">How it works</RouterLink>
       </div>
       <div class="footer-links">

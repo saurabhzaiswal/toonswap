@@ -15,35 +15,57 @@ const email = ref('');
 const code = ref('');
 const turnstileToken = ref('');
 const turnstileError = ref('');
+const googleError = ref('');
 const turnstileWidget = ref(null);
 const googleTarget = ref(null);
+const pendingEmailRequest = ref(false);
+const pendingGoogleCredential = ref('');
+const securityBusy = ref(false);
+const turnstileSiteKey = String(import.meta.env.VITE_TURNSTILE_SITE_KEY || '').trim();
+const googleClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+const otpEnabled = !['0', 'false', 'no', 'off'].includes(
+  String(import.meta.env.VITE_OTP_ENABLED || 'true')
+    .trim()
+    .toLowerCase(),
+);
 const isSignup = computed(() => route.name === 'signup');
 const purpose = computed(() => (isSignup.value ? 'SIGNUP' : 'LOGIN'));
 const challengeAction = computed(() => (isSignup.value ? 'signup' : 'login'));
 const validEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()));
-const canAuthenticate = computed(
-  () => Boolean(auth.config?.turnstile?.enabled && turnstileToken.value) && !auth.busy,
-);
+const turnstileEnabled = Boolean(turnstileSiteKey);
+const canAuthenticate = computed(() => turnstileEnabled && !auth.busy && !securityBusy.value);
 
 function destination() {
-  if (!auth.user?.profileComplete) return '/profile';
-  const value = typeof route.query.redirect === 'string' ? route.query.redirect : '/story-studio';
-  return value.startsWith('/') ? value : '/story-studio';
+  if (!auth.user?.profileComplete) return '/app/profile';
+  const value =
+    typeof route.query.redirect === 'string' ? route.query.redirect : '/app/story-studio';
+  return value === '/app' || value.startsWith('/app/') ? value : '/app/story-studio';
 }
 
 function resetVerification() {
+  pendingEmailRequest.value = false;
+  pendingGoogleCredential.value = '';
+  securityBusy.value = false;
   turnstileToken.value = '';
   turnstileWidget.value?.reset();
 }
 
+async function runEmailRequest() {
+  pendingEmailRequest.value = false;
+  await auth.requestOtp(email.value.trim(), purpose.value, turnstileToken.value).catch(() => null);
+  resetVerification();
+}
+
 async function requestCode() {
-  if (!turnstileToken.value) {
-    turnstileError.value = 'Please complete the security check first.';
+  if (!turnstileEnabled) {
+    turnstileError.value = 'Account access is unavailable until Turnstile is configured.';
     return;
   }
   turnstileError.value = '';
-  await auth.requestOtp(email.value.trim(), purpose.value, turnstileToken.value).catch(() => null);
-  resetVerification();
+  if (turnstileToken.value) return runEmailRequest();
+  pendingEmailRequest.value = true;
+  securityBusy.value = true;
+  await turnstileWidget.value?.execute();
 }
 
 async function verifyCode() {
@@ -52,18 +74,23 @@ async function verifyCode() {
 }
 
 function loadGoogle() {
-  if (!auth.config?.googleClientId || !googleTarget.value || !turnstileToken.value) return;
+  if (!googleClientId || !googleTarget.value) return;
   const initialize = () => {
     if (!googleTarget.value) return;
+    googleError.value = '';
     googleTarget.value.innerHTML = '';
     window.google?.accounts.id.initialize({
-      client_id: auth.config.googleClientId,
+      client_id: googleClientId,
       callback: async ({ credential }) => {
-        const user = await auth
-          .googleLogin(credential, purpose.value, turnstileToken.value)
-          .catch(() => null);
-        resetVerification();
-        if (user) router.replace(destination());
+        if (!turnstileEnabled) {
+          turnstileError.value = 'Account access is unavailable until Turnstile is configured.';
+          return;
+        }
+        turnstileError.value = '';
+        if (turnstileToken.value) return runGoogleLogin(credential);
+        pendingGoogleCredential.value = credential;
+        securityBusy.value = true;
+        await turnstileWidget.value?.execute();
       },
     });
     window.google?.accounts.id.renderButton(googleTarget.value, {
@@ -83,7 +110,39 @@ function loadGoogle() {
   script.async = true;
   script.dataset.toonswapGoogle = 'true';
   script.addEventListener('load', initialize, { once: true });
+  script.addEventListener(
+    'error',
+    () => {
+      googleError.value = 'Google sign-in could not load. Please refresh and try again.';
+    },
+    { once: true },
+  );
   document.head.appendChild(script);
+}
+
+async function runGoogleLogin(credential) {
+  pendingGoogleCredential.value = '';
+  const user = await auth
+    .googleLogin(credential, purpose.value, turnstileToken.value)
+    .catch(() => null);
+  resetVerification();
+  if (user) router.replace(destination());
+}
+
+function handleTurnstileError() {
+  pendingEmailRequest.value = false;
+  pendingGoogleCredential.value = '';
+  turnstileToken.value = '';
+  securityBusy.value = false;
+  turnstileError.value = 'Security verification could not finish. Please retry.';
+}
+
+function handleTurnstileExpired() {
+  pendingEmailRequest.value = false;
+  pendingGoogleCredential.value = '';
+  turnstileToken.value = '';
+  securityBusy.value = false;
+  turnstileError.value = 'Security verification expired. Please retry.';
 }
 
 function changeEmail() {
@@ -96,18 +155,25 @@ function changeEmail() {
 watch(turnstileToken, async (token) => {
   if (!token) return;
   turnstileError.value = '';
-  await nextTick();
-  loadGoogle();
+  if (pendingGoogleCredential.value) {
+    const credential = pendingGoogleCredential.value;
+    await runGoogleLogin(credential);
+    return;
+  }
+  if (pendingEmailRequest.value) await runEmailRequest();
 });
 watch(isSignup, async () => {
   changeEmail();
   resetVerification();
   await nextTick();
+  loadGoogle();
 });
 
 onMounted(async () => {
   await auth.bootstrap();
   if (auth.signedIn) return router.replace(destination());
+  await nextTick();
+  loadGoogle();
 });
 </script>
 
@@ -153,36 +219,22 @@ onMounted(async () => {
                 />
 
                 <div class="security-check">
-                  <div class="security-copy">
-                    <span aria-hidden="true">✓</span>
-                    <div>
-                      <strong>Quick security check</strong>
-                      <small>Stops automated sign-in abuse.</small>
-                    </div>
-                  </div>
                   <TurnstileWidget
-                    v-if="auth.config?.turnstile?.enabled"
+                    v-if="turnstileEnabled"
                     ref="turnstileWidget"
                     v-model:token="turnstileToken"
-                    :site-key="auth.config.turnstile.siteKey"
+                    :site-key="turnstileSiteKey"
                     :action="challengeAction"
-                    @error="turnstileError = 'Security verification could not load. Please retry.'"
-                    @expired="turnstileError = 'Security verification expired. Please retry.'"
+                    @error="handleTurnstileError"
+                    @expired="handleTurnstileExpired"
                   />
-                  <div
-                    v-else-if="!auth.config"
-                    class="security-loading"
-                    aria-label="Loading security check"
-                  >
-                    <i></i><i></i>
-                  </div>
                   <p v-else class="auth-notice">
-                    Account access is unavailable until Turnstile is configured.
+                    Account access is unavailable until the Turnstile site key is configured.
                   </p>
                   <p v-if="turnstileError" class="field-error" role="alert">{{ turnstileError }}</p>
                 </div>
 
-                <p v-if="auth.config && !auth.config.otpEnabled" class="auth-notice">
+                <p v-if="!otpEnabled" class="auth-notice">
                   Email codes are unavailable until mail delivery is configured.
                 </p>
                 <p v-if="auth.error" class="auth-error" role="alert">{{ auth.error }}</p>
@@ -191,7 +243,7 @@ onMounted(async () => {
                   type="submit"
                   block
                   arrow
-                  :disabled="!canAuthenticate || !validEmail || !auth.config?.otpEnabled"
+                  :disabled="!canAuthenticate || !validEmail || !otpEnabled"
                 >
                   {{
                     auth.busy
@@ -202,11 +254,15 @@ onMounted(async () => {
                   }}
                 </AppButton>
 
-                <template v-if="auth.config?.googleClientId">
-                  <div class="divider"><span>or</span></div>
-                  <div v-if="turnstileToken" ref="googleTarget" class="google-button"></div>
-                  <p v-else class="google-lock">Finish the security check to use Google.</p>
-                </template>
+                <div class="divider"><span>or</span></div>
+                <div class="google-provider">
+                  <div v-if="googleClientId" ref="googleTarget" class="google-button"></div>
+                  <AppButton v-else type="button" variant="outline" block disabled>
+                    <span class="google-mark" aria-hidden="true">G</span>
+                    Continue with Google
+                  </AppButton>
+                  <p v-if="googleError" class="field-error" role="alert">{{ googleError }}</p>
+                </div>
               </form>
             </div>
 
@@ -244,7 +300,6 @@ onMounted(async () => {
           </Transition>
 
           <footer class="auth-legal">
-            <span><i></i> Protected with HttpOnly sessions</span>
             <small>
               By continuing, you agree to our <RouterLink to="/terms">Terms</RouterLink> and
               <RouterLink to="/privacy">Privacy Policy</RouterLink>.
@@ -253,11 +308,8 @@ onMounted(async () => {
         </div>
 
         <aside class="auth-showcase" aria-label="Original ToonSwap creator universe">
-          <div class="showcase-topline">
-            <span>Original IP only</span><small>Made for every generation</small>
-          </div>
           <div class="showcase-copy">
-            <p>ONE ACCOUNT. EVERY WORLD.</p>
+            <p>YOUR CHARACTERS. YOUR STORIES.</p>
             <h2>Make the cartoon only you could imagine.</h2>
           </div>
           <div class="character-stage" aria-hidden="true">
@@ -377,11 +429,11 @@ onMounted(async () => {
 }
 
 .auth-heading h1 {
-  max-width: 10ch;
+  max-width: 13ch;
   margin: 0 0 14px;
-  font-size: clamp(2.45rem, 4vw, 4.15rem);
-  line-height: 0.96;
-  letter-spacing: -0.062em;
+  font-size: clamp(2.2rem, 3.3vw, 3.45rem);
+  line-height: 1;
+  letter-spacing: -0.052em;
   text-wrap: balance;
 }
 
@@ -400,66 +452,13 @@ onMounted(async () => {
 
 .security-check {
   display: grid;
-  gap: 10px;
-  padding: 13px 14px;
-  border: 1px solid $line;
-  border-radius: 17px;
-  background: color-mix(in srgb, #{$soft} 48%, white);
-}
-
-.security-copy {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-
-.security-copy > span {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border: 1.5px solid $ink;
-  border-radius: 11px;
-  color: $ink;
-  background: $mint;
-  font-weight: 950;
-}
-
-.security-copy div {
-  display: grid;
-  gap: 2px;
-}
-
-.security-copy small,
-.auth-legal small {
-  color: $muted;
-}
-
-.security-loading {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 12px;
-}
-
-.security-loading i {
-  height: 10px;
-  flex: 1;
-  border-radius: 999px;
-  background: $line;
-  animation: shimmer 1s ease-in-out infinite alternate;
-}
-
-.security-loading i:last-child {
-  flex: 0.35;
+  gap: 8px;
+  min-width: 0;
 }
 
 .auth-error,
 .auth-notice,
-.field-error,
-.google-lock {
+.field-error {
   margin: 0;
   padding: 11px 13px;
   border-radius: 11px;
@@ -477,12 +476,6 @@ onMounted(async () => {
   color: #755200;
   background: #fff4ce;
 }
-.google-lock {
-  color: $muted;
-  background: $soft;
-  text-align: center;
-}
-
 .divider {
   display: flex;
   align-items: center;
@@ -503,6 +496,23 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   overflow: hidden;
+}
+
+.google-provider {
+  display: grid;
+  gap: 10px;
+}
+
+.google-mark {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #4285f4;
+  background: white;
+  font-family: Arial, sans-serif;
+  font-weight: 800;
 }
 
 .change-email {
@@ -547,28 +557,10 @@ onMounted(async () => {
 
 .auth-legal {
   display: grid;
-  gap: 10px;
   margin-top: auto;
   padding-top: 22px;
   border-top: 1px solid $line;
   line-height: 1.5;
-}
-
-.auth-legal > span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: $muted;
-  font-size: 0.78rem;
-  font-weight: 850;
-}
-
-.auth-legal > span i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: $mint;
-  box-shadow: 0 0 0 4px color-mix(in srgb, #{$mint} 18%, transparent);
 }
 
 .auth-legal a {
@@ -600,35 +592,10 @@ onMounted(async () => {
   border-radius: 50%;
 }
 
-.showcase-topline {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.showcase-topline span {
-  padding: 8px 11px;
-  border: 1.5px solid $ink;
-  border-radius: 999px;
-  background: white;
-  font-size: 0.68rem;
-  font-weight: 950;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.showcase-topline small {
-  color: color-mix(in srgb, #{$ink} 68%, transparent);
-  font-weight: 800;
-}
-
 .showcase-copy {
   position: relative;
   z-index: 2;
-  margin-top: clamp(40px, 7vh, 74px);
+  margin-top: clamp(10px, 2vh, 24px);
 }
 
 .showcase-copy p {
@@ -640,11 +607,11 @@ onMounted(async () => {
 }
 
 .showcase-copy h2 {
-  max-width: 11ch;
+  max-width: 14ch;
   margin: 0;
-  font-size: clamp(2.7rem, 4vw, 4.8rem);
-  line-height: 0.95;
-  letter-spacing: -0.065em;
+  font-size: clamp(2.25rem, 3.15vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.052em;
 }
 
 .character-stage {
@@ -762,7 +729,7 @@ onMounted(async () => {
     padding: 30px;
   }
   .showcase-copy h2 {
-    font-size: clamp(2.5rem, 6vw, 3.8rem);
+    font-size: clamp(2.2rem, 5vw, 3.15rem);
   }
   .portrait {
     width: clamp(125px, 17vw, 165px);
@@ -802,8 +769,8 @@ onMounted(async () => {
     gap: 23px;
   }
   .auth-heading h1 {
-    max-width: 12ch;
-    font-size: clamp(2.35rem, 11vw, 3.35rem);
+    max-width: 14ch;
+    font-size: clamp(2.2rem, 9vw, 3rem);
   }
   .auth-showcase {
     min-height: 470px;
@@ -814,8 +781,8 @@ onMounted(async () => {
     margin-top: 34px;
   }
   .showcase-copy h2 {
-    max-width: 12ch;
-    font-size: clamp(2.5rem, 11vw, 3.6rem);
+    max-width: 14ch;
+    font-size: clamp(2.2rem, 9vw, 3.1rem);
   }
   .character-stage {
     min-height: 240px;
@@ -843,20 +810,14 @@ onMounted(async () => {
     padding-inline: 14px;
   }
   .auth-heading h1 {
-    font-size: 2.55rem;
-  }
-  .security-check {
-    padding-inline: 10px;
+    font-size: 2.25rem;
   }
   .auth-showcase {
     min-height: 420px;
     padding: 24px 18px;
   }
-  .showcase-topline small {
-    display: none;
-  }
   .showcase-copy h2 {
-    font-size: 2.65rem;
+    font-size: 2.3rem;
   }
   .character-stage {
     min-height: 210px;
@@ -887,8 +848,7 @@ onMounted(async () => {
 
 @media (prefers-reduced-motion: reduce) {
   .auth-step-enter-active,
-  .auth-step-leave-active,
-  .security-loading i {
+  .auth-step-leave-active {
     transition: none;
     animation: none;
   }

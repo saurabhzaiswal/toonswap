@@ -106,7 +106,7 @@ function addToCast(character) {
     title="Meet characters you have never seen before."
     description="Start with 24 art-ready ToonSwap originals across twelve worlds, then explore 216 structured character blueprints - or design someone completely your own."
     stat="216 originals"
-    status="Original IP only · 24 illustrated · 192 production blueprints"
+    status="24 illustrated · 192 production blueprints"
   >
     <template #hero-media>
       <div class="hero-character-stack" aria-label="A collage of original ToonSwap characters">

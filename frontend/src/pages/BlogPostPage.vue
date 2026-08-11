@@ -73,8 +73,12 @@ const relatedPosts = computed(() =>
           <span>Try it while the idea is fresh</span>
           <h2>Build your original world.</h2>
           <p>Design a cast, choose expressive voices, and plan every scene before rendering.</p>
-          <AppButton to="/characters" variant="primary" arrow block>Open character lab</AppButton>
-          <AppButton to="/story-studio" variant="outline" arrow block>Open Story Studio</AppButton>
+          <AppButton to="/app/characters" variant="primary" arrow block
+            >Open character lab</AppButton
+          >
+          <AppButton to="/app/story-studio" variant="outline" arrow block
+            >Open Story Studio</AppButton
+          >
         </aside>
       </div>
 

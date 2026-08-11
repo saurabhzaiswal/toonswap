@@ -37,9 +37,12 @@ apiClient.interceptors.response.use(
     const payload = error.response?.data;
     error.status = status;
     error.payload = payload;
-    error.message = Array.isArray(payload?.message)
-      ? payload.message.join('. ')
-      : payload?.message || error.message || 'Request failed';
+    const serviceUnavailable = [502, 503, 504].includes(status);
+    error.message = serviceUnavailable
+      ? 'The ToonSwap service is temporarily unavailable. Please try again shortly.'
+      : Array.isArray(payload?.message)
+        ? payload.message.join('. ')
+        : payload?.message || error.message || 'Request failed';
 
     if (
       status === 401 &&

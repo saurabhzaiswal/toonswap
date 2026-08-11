@@ -11,9 +11,9 @@ const sourceHtml = await readFile(join(distDirectory, 'index.html'), 'utf8');
 
 const routes = [
   { name: 'home', path: '/', params: {} },
-  { name: 'characters', path: '/characters', params: {} },
-  { name: 'voices', path: '/voices', params: {} },
-  { name: 'story-studio', path: '/story-studio', params: {} },
+  { name: 'characters', path: '/app/characters', params: {} },
+  { name: 'voices', path: '/app/voices', params: {} },
+  { name: 'story-studio', path: '/app/story-studio', params: {} },
   { name: 'roadmap', path: '/roadmap', params: {} },
   { name: 'blog', path: '/blog', params: {} },
   ...blogPosts.map((post) => ({
@@ -26,8 +26,8 @@ const routes = [
   { name: 'community', path: '/community-guidelines', params: {} },
   { name: 'login', path: '/login', params: {} },
   { name: 'signup', path: '/signup', params: {} },
-  { name: 'profile', path: '/profile', params: {} },
-  { name: 'admin', path: '/admin', params: {} },
+  { name: 'profile', path: '/app/profile', params: {} },
+  { name: 'admin', path: '/app/admin', params: {} },
 ];
 
 function escapeHtml(value) {
@@ -82,6 +82,9 @@ function renderRoute(route) {
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
     googlebot: privateRoute
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    bingbot: privateRoute
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
     'twitter:card': 'summary_large_image',

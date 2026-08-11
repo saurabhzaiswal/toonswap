@@ -24,7 +24,7 @@ const featuredPost = blogPosts[0];
           <div class="featured-bottom">
             <div class="post-meta">
               <span>{{ featuredPost.readTime }}</span
-              ><span>Original-IP playbook</span>
+              ><span>Character design playbook</span>
             </div>
             <AppButton :to="`/blog/${featuredPost.slug}`" variant="primary" size="sm" arrow
               >Read the field note</AppButton

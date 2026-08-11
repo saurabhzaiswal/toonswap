@@ -38,9 +38,14 @@ async function renderWidget() {
     widgetId = window.turnstile.render(host.value, {
       sitekey: props.siteKey,
       action: props.action,
-      theme: 'light',
-      size: 'flexible',
-      appearance: 'interaction-only',
+      theme: 'auto',
+      size: 'normal',
+      appearance: 'execute',
+      execution: 'execute',
+      retry: 'auto',
+      'refresh-expired': 'auto',
+      'refresh-timeout': 'auto',
+      language: 'auto',
       callback(token) {
         emit('update:token', token);
       },
@@ -63,23 +68,39 @@ function reset() {
   if (widgetId !== undefined && window.turnstile) window.turnstile.reset(widgetId);
 }
 
+async function execute() {
+  emit('update:token', '');
+  if (widgetId === undefined) await renderWidget();
+  if (widgetId === undefined || !window.turnstile) {
+    emit('error', 'widget-not-ready');
+    return;
+  }
+  try {
+    window.turnstile.execute(widgetId);
+  } catch {
+    emit('error', 'widget-execution-failed');
+  }
+}
+
 watch(() => props.action, renderWidget);
 onMounted(renderWidget);
 onBeforeUnmount(() => {
   if (widgetId !== undefined && window.turnstile) window.turnstile.remove(widgetId);
 });
-defineExpose({ reset });
+defineExpose({ execute, reset });
 </script>
 
 <template>
-  <div ref="host" class="turnstile-host" aria-label="Security verification"></div>
+  <div ref="host" class="turnstile-host" aria-hidden="true"></div>
 </template>
 
 <style scoped>
 .turnstile-host {
-  min-height: 65px;
-  width: 100%;
-  display: grid;
-  place-items: center;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

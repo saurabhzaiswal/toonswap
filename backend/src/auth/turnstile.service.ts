@@ -14,12 +14,6 @@ interface TurnstileResponse {
 export class TurnstileService {
   constructor(private readonly config: ConfigService) {}
 
-  configPayload() {
-    const siteKey = this.config.get<string>('TURNSTILE_SITE_KEY')?.trim();
-    const secret = this.config.get<string>('TURNSTILE_SECRET_KEY')?.trim();
-    return { enabled: Boolean(siteKey && secret), siteKey: siteKey || null };
-  }
-
   async assertValid(token: string, request: Request, expectedAction: 'login' | 'signup') {
     const secret = this.config.get<string>('TURNSTILE_SECRET_KEY')?.trim();
     if (!secret) throw new ServiceUnavailableException('Turnstile verification is not configured');

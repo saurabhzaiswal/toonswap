@@ -18,9 +18,9 @@ Sitemap: https://toonswap-kappa.vercel.app/sitemap.xml
 
 - Account creation: https://toonswap-kappa.vercel.app/signup
 - Sign in: https://toonswap-kappa.vercel.app/login
-- 216 original character records: https://toonswap-kappa.vercel.app/characters
-- Visual voice-direction library: https://toonswap-kappa.vercel.app/voices
-- Six-step scene Story Studio: https://toonswap-kappa.vercel.app/story-studio
+- 216 original character records: https://toonswap-kappa.vercel.app/app/characters
+- Visual voice-direction library: https://toonswap-kappa.vercel.app/app/voices
+- Six-step scene Story Studio: https://toonswap-kappa.vercel.app/app/story-studio
 - Creator profiles, media uploads, projects, and generation require authentication.
 - Administration is role protected and excluded from indexing.
 

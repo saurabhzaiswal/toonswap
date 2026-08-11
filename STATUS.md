@@ -17,8 +17,36 @@ Updated: 11 August 2026
 - Removed the prohibited long dash character from tracked project copy and
   documentation.
 
-## Latest session, Turnstile, Axios, and audit-log hardening
+## Latest authenticated routing and invisible Turnstile update
 
+- Namespaced every authenticated frontend screen under `/app`: characters,
+  voices, Story Studio, profile, and admin. Old protected URLs redirect to their
+  new locations, so existing bookmarks continue through the same session guard.
+- Added route-level guest, profile, and administrator enforcement. Signed-out
+  visitors are sent to sign-in with their requested `/app` destination intact;
+  signed-in visitors cannot reopen sign-in or signup; non-admin users cannot
+  enter the admin route. The Nest admin API remains protected independently by
+  the global session and `ADMIN` role guards.
+- Changed the real Cloudflare Turnstile widget to invisible, manually executed
+  verification. It runs only when a visitor submits email access or completes
+  the Google identity prompt, while the backend still validates each token.
+- Added the required Cloudflare Turnstile Privacy Addendum reference to the
+  privacy policy and kept the public site key in the frontend environment only.
+
+## Session, Axios, and audit-log hardening
+
+- Replaced the decorative security-check card with Cloudflare's real Turnstile
+  widget. The official Google Identity
+  Services button now renders as soon as its public client ID is configured,
+  rather than remaining hidden until Turnstile completes. Missing Google setup
+  is shown as an honest disabled provider state, and gateway failures receive a
+  readable service-unavailable message instead of raw Axios status text.
+- Moved the public Cloudflare Turnstile site key to the frontend-only
+  `VITE_TURNSTILE_SITE_KEY` environment variable. The backend now keeps only
+  the private secret and expected hostname. Removed `/api/auth/config`; Google,
+  OTP UI availability, Turnstile, and passkey-roadmap state are now frontend
+  concerns. A narrowly scoped `/api/auth/csrf` endpoint is called lazily only
+  when an unauthenticated user submits a login or signup action.
 - Kept ToonSwap's current B2C authorization model intentionally small: `UserRole`
   remains `USER | ADMIN`. The proposed `Client`, `Role`, `Permission`, and
   `RolePermission` tenant tables were not added because the product does not yet
