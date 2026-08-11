@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Vite production output
+dist/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches and test output
+.vite/
+.cache/
+coverage/
+playwright-report/
+test-results/
+
+# Local deployment state
+.vercel/
+.wrangler/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
