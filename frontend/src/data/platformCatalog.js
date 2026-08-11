@@ -23,6 +23,15 @@ export const archetypes = [
   { id: 'healer', name: 'Healer', suffix: 'moss', personality: 'Patient, funny, connected to nature', movement: 'Soft arcs and reassuring stillness' },
   { id: 'detective', name: 'Detective', suffix: 'lens', personality: 'Observant, deadpan, confidently wrong sometimes', movement: 'Measured walks and sudden reveals' },
   { id: 'dreamer', name: 'Dreamer', suffix: 'loo', personality: 'Inventive, kind, frequently lost in thought', movement: 'Floaty timing and oversized reactions' },
+  { id: 'rival', name: 'Friendly Rival', suffix: 'dash', personality: 'Competitive, loyal, secretly generous', movement: 'Confident starts and sheepish recoveries' },
+  { id: 'reluctant-hero', name: 'Reluctant Hero', suffix: 'mumble', personality: 'Cautious, capable, surprised by their own courage', movement: 'Hesitant wind-ups and committed finishes' },
+  { id: 'shapechanger', name: 'Shapechanger', suffix: 'morph', personality: 'Adaptable, theatrical, always experimenting', movement: 'Silhouette swaps and liquid transitions' },
+  { id: 'mentor', name: 'Unusual Mentor', suffix: 'sage', personality: 'Wise, eccentric, happily imperfect', movement: 'Economical gestures and perfectly timed chaos' },
+  { id: 'captain', name: 'Team Captain', suffix: 'helm', personality: 'Organised, optimistic, occasionally overprepared', movement: 'Decisive points and rallying poses' },
+  { id: 'monster-friend', name: 'Monster Friend', suffix: 'bloom', personality: 'Enormous, tender, afraid of tiny noises', movement: 'Heavy landings and delicate fingertip acting' },
+  { id: 'speedster', name: 'Speedster', suffix: 'flash', personality: 'Restless, helpful, learns to slow down', movement: 'Smear-frame bursts and abrupt statue-still stops' },
+  { id: 'reporter', name: 'Curious Reporter', suffix: 'scoop', personality: 'Fearless, nosy, committed to the full story', movement: 'Forward-leaning walks and rapid note-taking beats' },
+  { id: 'tiny-giant', name: 'Tiny Giant', suffix: 'thump', personality: 'Small in size, huge in confidence and heart', movement: 'Miniature power poses and oversized anticipation' },
 ];
 
 export const characterCatalog = worlds.flatMap((world, worldIndex) => (
@@ -38,6 +47,7 @@ export const characterCatalog = worlds.flatMap((world, worldIndex) => (
     setting: world.setting,
     mark: `${worldIndex + 1}${String.fromCharCode(65 + archetypeIndex)}`,
     color: world.color,
+    blueprintIndex: archetypeIndex,
     artIndex: archetypeIndex < 2 ? worldIndex * 2 + archetypeIndex : null,
     status: archetypeIndex < 2 ? 'art-ready' : 'concept',
   }))
@@ -65,18 +75,18 @@ export const voiceRegions = [
 ];
 
 export const voiceDirections = [
-  ['mischief', 'Mischief Spark', 'quick, cheeky, playful'],
-  ['warm-elder', 'Warm Elder', 'steady, affectionate, wise'],
-  ['deadpan', 'Deadpan Narrator', 'dry, precise, understated'],
-  ['heroic', 'Comic Hero', 'bold, sincere, energetic'],
-  ['aunty-energy', 'Festival Host', 'bright, social, expressive'],
-  ['soft-story', 'Bedtime Storyteller', 'gentle, intimate, calm'],
-  ['street-poet', 'Street Poet', 'rhythmic, clever, grounded'],
-  ['curious-kid', 'Curious Youth', 'wonder-filled, fast, lively'],
-  ['village-radio', 'Village Radio', 'conversational, warm, witty'],
-  ['future-guide', 'Future Guide', 'clean, optimistic, focused'],
-  ['musical', 'Musical Comic', 'melodic, bouncy, performance-led'],
-  ['mystery', 'Mystery Whisper', 'suspenseful, textured, restrained'],
+  ['mischief', 'Mischief Spark', 'quick, cheeky, playful', 'raised brow · held-in laugh', 'high', 'youthful'],
+  ['warm-elder', 'Warm Elder', 'steady, affectionate, wise', 'soft eyes · knowing smile', 'low', 'elder'],
+  ['deadpan', 'Deadpan Narrator', 'dry, precise, understated', 'straight face · tiny side-eye', 'low', 'adult'],
+  ['heroic', 'Comic Hero', 'bold, sincere, energetic', 'bright eyes · brave grin', 'high', 'adult'],
+  ['aunty-energy', 'Festival Host', 'bright, social, expressive', 'open smile · welcoming hands', 'high', 'adult'],
+  ['soft-story', 'Bedtime Storyteller', 'gentle, intimate, calm', 'kind gaze · quiet wonder', 'soft', 'adult'],
+  ['street-poet', 'Street Poet', 'rhythmic, clever, grounded', 'focused eyes · half-smile', 'medium', 'young adult'],
+  ['curious-kid', 'Curious Youth', 'wonder-filled, fast, lively', 'wide eyes · delighted gasp', 'high', 'youthful'],
+  ['village-radio', 'Village Radio', 'conversational, warm, witty', 'friendly squint · ready laugh', 'medium', 'adult'],
+  ['future-guide', 'Future Guide', 'clean, optimistic, focused', 'calm focus · hopeful smile', 'medium', 'ageless'],
+  ['musical', 'Musical Comic', 'melodic, bouncy, performance-led', 'singing joy · rhythmic bounce', 'high', 'all ages'],
+  ['mystery', 'Mystery Whisper', 'suspenseful, textured, restrained', 'alert eyes · secretive pause', 'soft', 'adult'],
 ];
 
 const liveVoices = [
@@ -87,12 +97,15 @@ const liveVoices = [
 ];
 
 const roadmapVoices = voiceRegions.flatMap(([regionId, language, region], regionIndex) => (
-  voiceDirections.map(([directionId, name, direction], directionIndex) => ({
+  voiceDirections.map(([directionId, name, direction, expressionCue, energy, ageFeel], directionIndex) => ({
     id: `${regionId}-${directionId}`,
     name,
     language,
     region,
     direction,
+    expressionCue,
+    energy,
+    ageFeel,
     status: regionIndex < 4 && directionIndex < 2 ? 'planned' : 'research',
   }))
 ));
@@ -100,7 +113,15 @@ const roadmapVoices = voiceRegions.flatMap(([regionId, language, region], region
 export const voiceCatalog = [
   ...liveVoices,
   ...roadmapVoices.filter((voice) => !liveVoices.some((live) => live.id === voice.id)),
-].map((voice, index) => ({ ...voice, artIndex: index < 4 ? index : voiceDirections.findIndex(([directionId]) => voice.id.endsWith(directionId)) }));
+].map((voice, index) => {
+  const directionIndex = voiceDirections.findIndex(([directionId]) => voice.id.endsWith(directionId));
+  const directionMeta = voiceDirections[Math.max(0, directionIndex)] || voiceDirections[0];
+  return {
+    expressionCue: directionMeta[3], energy: directionMeta[4], ageFeel: directionMeta[5],
+    ...voice,
+    artIndex: index < 4 ? index : Math.max(0, directionIndex),
+  };
+});
 
 export const languageSamples = [
   'Hindi', 'Bhojpuri', 'Kannada', 'Tamil', 'Telugu', 'Bengali', 'Punjabi', 'Marathi',
@@ -108,7 +129,7 @@ export const languageSamples = [
   'French', 'German', 'Japanese', 'Korean', 'Indonesian', 'Thai', 'Turkish', 'Vietnamese',
 ];
 
-export const blogPosts = [
+const blogPostDrafts = [
   {
     slug: 'original-characters-without-copying',
     category: 'Original IP',
@@ -116,6 +137,7 @@ export const blogPosts = [
     excerpt: 'A practical framework for creating fresh silhouettes, motivations, worlds, movement rules, and voices that belong to you.',
     readTime: '7 min read',
     color: '#ff8d65',
+    cover: '/art/blog/original-characters-without-copying.jpg',
     sections: [
       ['Start with a human truth, not a reference', 'Choose a relatable tension—sibling rivalry, an invention gone wrong, a village rumour, first-day nerves—and build outward. A character becomes original through their specific wants, flaws, relationships, silhouette, movement, and world rules.'],
       ['Design a movement signature', 'Give every character three repeatable physical ideas: how they enter, how they react, and how they recover. Movement is identity, so it should come from the character’s body and temperament rather than another show.'],
@@ -129,6 +151,7 @@ export const blogPosts = [
     excerpt: 'Timing, relationships, politeness, rhythm, and local context matter as much as vocabulary.',
     readTime: '6 min read',
     color: '#48b9a7',
+    cover: '/art/blog/directing-comedy-across-languages.jpg',
     sections: [
       ['Comedy lives in context', 'A literal translation may preserve meaning while losing status, rhythm, or warmth. Native review should shape the premise, phrasing, pauses, and performance direction.'],
       ['Accents are not costumes', 'Build original voices with clear consent and direction. Avoid exaggerating communities into stereotypes or copying a recognisable performer.'],
@@ -142,6 +165,7 @@ export const blogPosts = [
     excerpt: 'Plan cast, beats, camera, action, dialogue, voice direction, and continuity before rendering expensive video.',
     readTime: '8 min read',
     color: '#7152f3',
+    cover: '/art/blog/scene-by-scene-animation-workflow.jpg',
     sections: [
       ['Outline before rendering', 'Break the story into short beats with one clear purpose each. Lock the cast, location, visual era, and emotional change before generating frames.'],
       ['Treat every scene as editable', 'Store dialogue, action, camera, duration, voice direction, and continuity notes separately. A creator should be able to change scene four without rebuilding the entire film.'],
@@ -158,3 +182,8 @@ export const blogPosts = [
     slug: 'one-hour-animation-cost-plan', category: 'Production', title: 'Why a one-hour AI cartoon needs a render and cost plan', excerpt: 'Long-form generation requires shot budgeting, resumable queues, versioned assets, moderation, and predictable spend.', readTime: '9 min read', color: '#258bb9', sections: [['Think in shots', 'A one-hour film should be assembled from short, independently retryable shots rather than generated as one job.'], ['Cache expensive work', 'Character references, voices, backgrounds, and approved shots should be reusable across versions.'], ['Protect the budget', 'Estimate every provider call, require confirmation before long renders, set account limits, and stop queues when spend thresholds are reached.']],
   },
 ];
+
+export const blogPosts = blogPostDrafts.map((post) => ({
+  ...post,
+  cover: post.cover || `/art/blog/${post.slug}.jpg`,
+}));

@@ -1,6 +1,21 @@
 @use './tokens' as *;
 
 :root {
+  --color-primary: #ff624d;
+  --color-primary-strong: #c93e2d;
+  --color-secondary: #25b9a7;
+  --color-secondary-soft: #dff7f2;
+  --color-tertiary: #7152f3;
+  --color-accent: #ffc94a;
+  --color-ink: #17141f;
+  --color-muted: #746f7c;
+  --color-canvas: #fffaf2;
+  --color-surface: #fffdf9;
+  --color-soft: #f6efdf;
+  --color-border: #ded6c8;
+  --color-danger: #b73428;
+  --shadow-soft: 0 18px 50px rgba(39, 26, 14, 0.09);
+  --shadow-lift: 0 24px 70px rgba(39, 26, 14, 0.14);
   --type-xs: 0.8rem;
   --type-sm: 0.92rem;
   --type-body: clamp(1rem, 0.96rem + 0.18vw, 1.12rem);

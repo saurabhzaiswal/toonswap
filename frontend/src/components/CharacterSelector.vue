@@ -1,5 +1,6 @@
 <script setup>
 import { useMemeStore } from '../stores/memeStore';
+import AppButton from './ui/AppButton.vue';
 
 const store = useMemeStore();
 
@@ -17,10 +18,10 @@ const characters = [
       <small>3 originals</small>
     </div>
     <div class="character-options">
-      <button
+      <AppButton
         v-for="character in characters"
         :key="character.id"
-        type="button"
+        variant="bare"
         class="character-option"
         :class="[`option-${character.tone}`, { selected: store.selectedCharacter === character.id }]"
         :aria-pressed="store.selectedCharacter === character.id"
@@ -29,7 +30,7 @@ const characters = [
         <span class="option-art" aria-hidden="true"><b>{{ character.mark }}</b><i></i></span>
         <span class="option-copy"><strong>{{ character.name }}</strong><small>{{ character.tagline }}</small></span>
         <span class="option-check" aria-hidden="true">✓</span>
-      </button>
+      </AppButton>
     </div>
   </section>
 </template>

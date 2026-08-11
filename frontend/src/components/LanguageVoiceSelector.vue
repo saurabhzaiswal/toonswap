@@ -1,20 +1,23 @@
 <script setup>
 import { useMemeStore } from '../stores/memeStore';
+import AppButton from './ui/AppButton.vue';
+import UiSelect from './ui/UiSelect.vue';
 
 const store = useMemeStore();
+const avatarStyle = (index) => ({ backgroundImage: "url('/art/voice-atlas.png')", backgroundSize: '400% 300%', backgroundPosition: `${(index % 4) * 33.333}% ${Math.floor(index / 4) * 50}%` });
 
 const languages = [
-  { id: 'hindi', label: 'Hindi / हिन्दी' },
-  { id: 'bhojpuri', label: 'Bhojpuri / भोजपुरी' },
-  { id: 'kannada', label: 'Kannada / ಕನ್ನಡ' },
-  { id: 'english-india', label: 'English (India)' },
+  { value: 'hindi', label: 'Hindi / हिन्दी', description: 'Devanagari · India' },
+  { value: 'bhojpuri', label: 'Bhojpuri / भोजपुरी', description: 'Purvanchal · India' },
+  { value: 'kannada', label: 'Kannada / ಕನ್ನಡ', description: 'Karnataka · India' },
+  { value: 'english-india', label: 'English (India)', description: 'Indian English' },
 ];
 
 const voiceStyles = [
-  { id: 'bhojpuri-comedy-uncle', label: 'Mast Uncle', region: 'Bhojpuri', tone: 'Warm & cheeky', mark: 'M' },
-  { id: 'bhojpuri-funny-aunty', label: 'Fun Aunty', region: 'Bhojpuri', tone: 'Bold & bright', mark: 'F' },
-  { id: 'kannada-funny-boy', label: 'Funny Huduga', region: 'Kannada', tone: 'Quick & playful', mark: 'H' },
-  { id: 'kannada-comedy-thatha', label: 'Comedy Thatha', region: 'Kannada', tone: 'Dry & lovable', mark: 'T' },
+  { id: 'bhojpuri-comedy-uncle', label: 'Mast Uncle', region: 'Bhojpuri', tone: 'Warm & cheeky', expression: 'Knowing grin', artIndex: 0 },
+  { id: 'bhojpuri-funny-aunty', label: 'Fun Aunty', region: 'Bhojpuri', tone: 'Bold & bright', expression: 'Welcoming laugh', artIndex: 1 },
+  { id: 'kannada-funny-boy', label: 'Funny Huduga', region: 'Kannada', tone: 'Quick & playful', expression: 'Delighted surprise', artIndex: 2 },
+  { id: 'kannada-comedy-thatha', label: 'Comedy Thatha', region: 'Kannada', tone: 'Dry & lovable', expression: 'Tiny side-eye', artIndex: 3 },
 ];
 
 const presetTemplates = [
@@ -27,32 +30,25 @@ const presetTemplates = [
 
 <template>
   <section v-if="store.inputMode === 'text'" class="voice-settings" aria-label="Voice and language settings">
-    <div class="select-row">
-      <label for="script-language"><span>Script language</span><small>Live choices</small></label>
-      <select id="script-language" v-model="store.language">
-        <option v-for="language in languages" :key="language.id" :value="language.id">{{ language.label }}</option>
-      </select>
-    </div>
+    <UiSelect v-model="store.language" label="Script language" hint="Custom keyboard-friendly language picker" :options="languages" />
 
-    <div class="voice-label"><span>Comedy voice</span><small>Original voice designs only</small></div>
+    <div class="voice-label"><span>Comedy voice</span><small>Choose by face, feeling, and performance direction</small></div>
     <div class="voice-options">
-      <button
-        v-for="voice in voiceStyles"
-        :key="voice.id"
-        type="button"
-        :class="{ selected: store.voiceStyle === voice.id }"
-        :aria-pressed="store.voiceStyle === voice.id"
-        @click="store.voiceStyle = voice.id"
-      >
-        <span class="voice-avatar">{{ voice.mark }}</span>
-        <span><strong>{{ voice.label }}</strong><small>{{ voice.region }} · {{ voice.tone }}</small></span>
+      <AppButton v-for="voice in voiceStyles" :key="voice.id" variant="bare" :class="{ selected: store.voiceStyle === voice.id }" :aria-pressed="store.voiceStyle === voice.id" @click="store.voiceStyle = voice.id">
+        <span class="voice-avatar expressive-avatar" :style="avatarStyle(voice.artIndex)" aria-hidden="true"></span>
+        <span><strong>{{ voice.label }}</strong><small>{{ voice.region }} · {{ voice.tone }}</small><em>{{ voice.expression }}</em></span>
         <i aria-hidden="true">✓</i>
-      </button>
+      </AppButton>
     </div>
 
     <div class="prompt-chips">
       <span>Need a line?</span>
-      <button v-for="template in presetTemplates" :key="template.label" type="button" @click="store.scriptText = template.text">{{ template.label }}</button>
+      <AppButton v-for="template in presetTemplates" :key="template.label" variant="bare" @click="store.scriptText = template.text">{{ template.label }}</AppButton>
     </div>
   </section>
 </template>
+
+<style scoped lang="scss">
+.expressive-avatar { width: 58px; height: 58px; flex: 0 0 58px; border: 2px solid var(--color-ink); border-radius: 16px; background-color: var(--color-soft); }
+.voice-options em { display: block; margin-top: 3px; color: var(--color-primary-strong); font-size: .72rem; font-style: normal; font-weight: 800; }
+</style>

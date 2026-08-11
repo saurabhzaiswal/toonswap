@@ -45,6 +45,20 @@ enum SceneStatus {
   FAILED
 }
 
+enum SelfInsertStatus {
+  DRAFT
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+  DELETED
+}
+
+enum SelfInsertVoiceMode {
+  AS_IS
+  CONVERT
+}
+
 model MemeJob {
   id           String    @id // UUIDv7, generated in service, doubles as session id
   character    String
@@ -135,6 +149,7 @@ model StoryProject {
   costEstimate          Json?
   storyCharacters       StoryCharacter[]
   scenes                StoryScene[]
+  selfInsertAssets      SelfInsertAsset[]
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
@@ -147,6 +162,7 @@ model StoryCharacter {
   projectId      String
   characterId    String?
   voiceProfileId String?
+  selfInsertAssetId String?
   role           String
   sortOrder      Int
   customSnapshot Json?
@@ -154,12 +170,55 @@ model StoryCharacter {
   project        StoryProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   character      Character?    @relation(fields: [characterId], references: [id], onDelete: SetNull)
   voiceProfile   VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  selfInsertAsset SelfInsertAsset? @relation(fields: [selfInsertAssetId], references: [id], onDelete: SetNull)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@unique([projectId, sortOrder])
   @@index([characterId])
   @@index([voiceProfileId])
+  @@index([selfInsertAssetId])
+}
+
+model ConsentRecord {
+  id                String            @id
+  ownerSessionId    String
+  likenessAuthorized Boolean
+  voiceAuthorized   Boolean
+  retentionAccepted Boolean
+  policyVersion     String
+  createdAt         DateTime          @default(now())
+  withdrawnAt       DateTime?
+  selfInsertAssets  SelfInsertAsset[]
+
+  @@index([ownerSessionId, createdAt])
+}
+
+model SelfInsertAsset {
+  id                    String              @id
+  ownerSessionId        String
+  projectId             String?
+  consentRecordId       String
+  displayName           String
+  photoSourceUrl        String?
+  voiceSourceUrl        String?
+  characterReferenceUrl String?
+  voiceReferenceUrl     String?
+  voiceMode             SelfInsertVoiceMode @default(AS_IS)
+  voiceStyle            String?
+  status                SelfInsertStatus     @default(DRAFT)
+  failureReason         String?
+  expiresAt             DateTime
+  deletedAt             DateTime?
+  project               StoryProject?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  consentRecord         ConsentRecord         @relation(fields: [consentRecordId], references: [id], onDelete: Restrict)
+  storyCharacters       StoryCharacter[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([ownerSessionId, status])
+  @@index([projectId])
+  @@index([expiresAt, status])
 }
 
 model StoryScene {

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import PlatformPageShell from '../components/PlatformPageShell.vue';
-import UiButton from '../components/ui/UiButton.vue';
+import AppButton from '../components/ui/AppButton.vue';
 import UiInput from '../components/ui/UiInput.vue';
 import UiSegmented from '../components/ui/UiSegmented.vue';
 import UiSelect from '../components/ui/UiSelect.vue';
@@ -25,9 +25,10 @@ const builder = reactive({
 const worldOptions = computed(() => [{ value: 'all', label: 'All 12 story worlds' }, ...worlds.map((world) => ({ value: world.id, label: world.name }))]);
 const builderWorldOptions = worlds.map((world) => ({ value: world.id, label: `${world.name} · ${world.era}` }));
 const roleOptions = archetypes.map((item) => ({ value: item.id, label: item.name }));
+const catalogCounts = { total: characterCatalog.length, illustrated: characterCatalog.filter((item) => item.status === 'art-ready').length, blueprints: characterCatalog.filter((item) => item.status === 'concept').length };
 const filteredCharacters = computed(() => characterCatalog.filter((character) => {
   const matchesWorld = worldFilter.value === 'all' || character.worldId === worldFilter.value;
-  const matchesMode = libraryMode.value === 'all' || character.status === 'art-ready';
+  const matchesMode = libraryMode.value === 'all' || (libraryMode.value === 'art-ready' ? character.status === 'art-ready' : character.status === 'concept');
   const haystack = `${character.name} ${character.world} ${character.role} ${character.personality}`.toLowerCase();
   return matchesWorld && matchesMode && haystack.includes(query.value.toLowerCase());
 }));
@@ -66,7 +67,7 @@ function addToCast(character) {
 </script>
 
 <template>
-  <PlatformPageShell eyebrow="Original character universe" title="Meet characters you have never seen before." description="Start with 24 art-ready ToonSwap originals across twelve worlds, then grow into 108 structured character blueprints—or design someone completely your own." stat="24 art-ready" status="Original IP only · 24 illustrated · 84 scalable blueprints">
+  <PlatformPageShell eyebrow="Original character universe" title="Meet characters you have never seen before." description="Start with 24 art-ready ToonSwap originals across twelve worlds, then explore 216 structured character blueprints—or design someone completely your own." stat="216 originals" status="Original IP only · 24 illustrated · 192 production blueprints">
     <template #hero-media>
       <div class="hero-character-stack" aria-label="A collage of original ToonSwap characters">
         <span v-for="index in [0, 7, 12, 17]" :key="index" :style="artStyle(index)"></span>
@@ -75,9 +76,13 @@ function addToCast(character) {
     </template>
 
     <section class="character-library section-pad">
+      <div class="coverage-banner">
+        <div class="coverage-number"><strong>{{ catalogCounts.total }}</strong><span>original characters designed</span></div>
+        <div class="coverage-copy"><b>Why are there 24 finished pictures?</b><p><strong>{{ catalogCounts.illustrated }} characters are illustrated now.</strong> The other {{ catalogCounts.blueprints }} already have an original name, world, personality, movement, and production brief, but their final art is still coming. We label them clearly instead of showing repeated fake pictures.</p><div class="coverage-meter"><i :style="{ width: `${(catalogCounts.illustrated / catalogCounts.total) * 100}%` }"></i></div><small>{{ catalogCounts.illustrated }} illustrated · {{ catalogCounts.blueprints }} production blueprints waiting for reviewed generation</small></div>
+      </div>
       <header class="section-heading">
         <div><p class="kicker">Choose your cast</p><h2>Faces first. Details when you need them.</h2><p>Every illustrated character has a distinct world, role, personality, and movement language. The remaining blueprints are the scale-up path—not fake finished assets.</p></div>
-        <UiSegmented v-model="libraryMode" label="Library view" :options="[{ value: 'art-ready', label: '24 illustrated' }, { value: 'all', label: 'All 108' }]" />
+        <UiSegmented v-model="libraryMode" label="Library view" :options="[{ value: 'art-ready', label: '24 illustrated now' }, { value: 'concept', label: '192 art coming soon' }, { value: 'all', label: 'All 216' }]" />
       </header>
 
       <div class="filters">
@@ -87,23 +92,23 @@ function addToCast(character) {
       </div>
 
       <div class="world-pills" aria-label="Filter by story world">
-        <button v-for="world in worlds" :key="world.id" type="button" :class="{ active: worldFilter === world.id }" :style="{ '--world': world.color }" @click="worldFilter = world.id"><i>{{ world.mark }}</i><span><b>{{ world.name }}</b><small>{{ world.era }}</small></span></button>
+        <AppButton v-for="world in worlds" :key="world.id" variant="bare" :class="{ active: worldFilter === world.id }" :style="{ '--world': world.color }" @click="worldFilter = world.id"><i>{{ world.mark }}</i><span><b>{{ world.name }}</b><small>{{ world.era }}</small></span></AppButton>
       </div>
 
       <div class="character-grid">
         <article v-for="character in shownCharacters" :key="character.id" class="character-card" :style="{ '--card-color': character.color }">
           <div v-if="character.artIndex !== null" class="character-art" :style="artStyle(character.artIndex)"><span>Illustrated original</span></div>
-          <div v-else class="blueprint-art"><b>{{ character.mark }}</b><span>Design blueprint</span></div>
+          <div v-else class="blueprint-art" :class="`shape-${character.blueprintIndex % 6}`"><i aria-hidden="true"></i><b>{{ character.mark }}</b><span>Art coming soon · blueprint ready</span></div>
           <div class="character-copy">
             <small>{{ character.era }} · {{ character.role }}</small>
             <h3>{{ character.name }}</h3>
             <p>{{ character.personality }}</p>
             <div class="movement"><i aria-hidden="true">↝</i><span><b>Movement signature</b>{{ character.movement }}</span></div>
-            <UiButton variant="secondary" block @click="addToCast(character)">Add {{ character.name }} to cast <template #icon>＋</template></UiButton>
+            <AppButton variant="outline" block @click="addToCast(character)">Add {{ character.name }} to cast <template #icon>＋</template></AppButton>
           </div>
         </article>
       </div>
-      <UiButton v-if="visibleCount < filteredCharacters.length" variant="secondary" class="load-more" @click="visibleCount += 12">Show 12 more</UiButton>
+      <AppButton v-if="visibleCount < filteredCharacters.length" variant="outline" class="load-more" arrow @click="visibleCount += 12">Show 12 more</AppButton>
     </section>
 
     <section class="character-builder section-pad">
@@ -115,8 +120,8 @@ function addToCast(character) {
           <UiInput v-model="builder.personality" label="Personality in one sentence" />
           <div class="two-up"><UiTextarea v-model="builder.silhouette" label="Original silhouette" :rows="3" /><UiTextarea v-model="builder.movement" label="Movement signature" :rows="3" /></div>
           <UiTextarea v-model="builder.prompt" label="Character design brief" :rows="4" placeholder="Clothing materials, proportions, habits, relationships, props, fears, hopes… Never name an existing character." hint="This brief is saved locally. Image generation becomes available after a moderated backend provider is connected." />
-          <fieldset class="palette"><legend>Key color</legend><button v-for="color in palettes" :key="color" type="button" :class="{ active: builder.palette === color }" :style="{ background: color }" :aria-label="`Use ${color}`" :aria-pressed="builder.palette === color" @click="builder.palette = color"></button></fieldset>
-          <UiButton variant="primary" @click="saveCharacter">Save original character draft <template #icon>→</template></UiButton>
+          <fieldset class="palette"><legend>Key color</legend><AppButton v-for="color in palettes" :key="color" variant="bare" icon-only :class="{ active: builder.palette === color }" :style="{ background: color }" :aria-label="`Use ${color}`" :aria-pressed="builder.palette === color" @click="builder.palette = color"></AppButton></fieldset>
+          <AppButton variant="primary" arrow @click="saveCharacter">Save original character draft</AppButton>
         </div>
         <aside class="builder-preview" :style="{ '--preview': builder.palette }">
           <div class="preview-art" :style="artStyle(worlds.findIndex((world) => world.id === builder.worldId) * 2)"><span>Visual direction</span></div>
@@ -147,13 +152,13 @@ function addToCast(character) {
 .world-pills button.active { border-color: var(--world); box-shadow: 0 0 0 3px color-mix(in srgb, var(--world) 22%, transparent); }
 .world-pills i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: white; background: var(--world); font-style: normal; font-size: .8rem; font-weight: 900; }
 .world-pills span { display: grid; gap: 2px; }.world-pills b { font-size: .9rem; }.world-pills small { color: $muted; font-size: .74rem; }
+.coverage-banner { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: center; margin-bottom: 62px; padding: clamp(24px, 4vw, 42px); border: 2px solid $ink; border-radius: $radius-lg; background: color-mix(in srgb, #{$gold} 34%, #{$paper}); box-shadow: 8px 9px 0 $ink; }.coverage-number { display: grid; text-align: center; }.coverage-number strong { color: $coral; font-size: clamp(3.8rem, 7vw, 6.8rem); line-height: .88; letter-spacing: -.07em; }.coverage-number span { margin-top: 10px; font-weight: 900; }.coverage-copy b { font-size: clamp(1.25rem, 2vw, 1.75rem); }.coverage-copy p { max-width: 900px; margin: 9px 0 16px; color: $muted; line-height: 1.65; }.coverage-copy p strong { color: $ink; }.coverage-meter { height: 11px; overflow: hidden; border: 1.5px solid $ink; border-radius: 999px; background: white; }.coverage-meter i { display: block; height: 100%; min-width: 14px; background: $coral; }.coverage-copy small { display: block; margin-top: 8px; color: $muted; font-weight: 800; }
 .character-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .character-card { @include panel; overflow: hidden; transition: transform .22s ease, box-shadow .22s ease; }
 .character-card:hover { transform: translateY(-5px); box-shadow: $shadow-lift; }
 .character-art, .blueprint-art { position: relative; aspect-ratio: 16 / 10; background-color: color-mix(in srgb, var(--card-color) 26%, #fff); background-repeat: no-repeat; }
 .character-art span, .blueprint-art span { position: absolute; left: 14px; bottom: 14px; padding: 7px 10px; border-radius: 30px; color: $ink; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); font-size: .74rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
-.blueprint-art { display: grid; place-items: center; background: repeating-linear-gradient(45deg, #f0e9df, #f0e9df 16px, #f8f3eb 16px, #f8f3eb 32px); }
-.blueprint-art b { font-size: 3rem; color: var(--card-color); }
+.blueprint-art { display: grid; place-items: center; isolation: isolate; overflow: hidden; background: repeating-linear-gradient(45deg, #f0e9df, #f0e9df 16px, #f8f3eb 16px, #f8f3eb 32px); }.blueprint-art::after { content: ''; position: absolute; inset: 12px; border: 1px dashed color-mix(in srgb, var(--card-color) 65%, $ink); border-radius: 18px; }.blueprint-art i { position: absolute; z-index: -1; width: 120px; height: 145px; border: 3px solid $ink; border-radius: 46% 46% 28% 28%; background: color-mix(in srgb, var(--card-color) 68%, white); box-shadow: 8px 9px 0 $ink; transform: rotate(-4deg); }.blueprint-art b { display: grid; place-items: center; width: 58px; height: 58px; border: 2px solid $ink; border-radius: 50%; color: $ink; background: white; font-size: 1.25rem; }.blueprint-art.shape-1 i { width: 150px; height: 112px; border-radius: 50% 45% 35% 50%; transform: rotate(5deg); }.blueprint-art.shape-2 i { width: 105px; height: 155px; border-radius: 35px 35px 48% 48%; transform: rotate(2deg); }.blueprint-art.shape-3 i { width: 148px; height: 140px; border-radius: 30% 60% 28% 52%; transform: rotate(-7deg); }.blueprint-art.shape-4 i { width: 88px; height: 158px; border-radius: 45% 45% 22px 22px; transform: rotate(7deg); }.blueprint-art.shape-5 i { width: 160px; height: 105px; border-radius: 52% 35% 50% 32%; transform: rotate(-2deg); }
 .character-copy { display: grid; gap: 12px; padding: 22px; }
 .character-copy > small { color: var(--card-color); font-size: .78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
 .character-copy h3 { margin: 0; font-size: 1.8rem; letter-spacing: -.04em; }.character-copy > p { min-height: 48px; margin: 0; color: $muted; line-height: 1.5; }
@@ -174,5 +179,5 @@ function addToCast(character) {
 .character-toast { position: fixed; z-index: 50; right: 24px; bottom: 24px; max-width: 360px; padding: 16px 20px; border-radius: 15px; color: white; background: $ink; box-shadow: $shadow-lift; font-weight: 800; }
 .world-pills small, .character-art span, .blueprint-art span, .character-copy > small, .movement b { font-size: .8rem; }
 @media (max-width: 1080px) { .character-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.builder-shell { grid-template-columns: 1fr; }.builder-preview { position: static; display: grid; grid-template-columns: 340px 1fr; }.section-heading { grid-template-columns: 1fr; }.section-heading > :last-child { max-width: 420px; } }
-@media (max-width: 700px) { .hero-character-stack { grid-template-columns: repeat(2, 92px); width: 190px; }.filters, .character-grid, .two-up, .builder-preview { grid-template-columns: 1fr; }.result-count { min-height: 65px; }.character-copy h3 { font-size: 1.55rem; }.section-heading > :last-child { width: 100%; }.builder-form { padding: 20px; }.builder-preview .preview-art { aspect-ratio: 16 / 11; } }
+@media (max-width: 700px) { .coverage-banner { grid-template-columns: 1fr; text-align: left; }.coverage-number { text-align: left; }.hero-character-stack { grid-template-columns: repeat(2, 92px); width: 190px; }.filters, .character-grid, .two-up, .builder-preview { grid-template-columns: 1fr; }.result-count { min-height: 65px; }.character-copy h3 { font-size: 1.55rem; }.section-heading > :last-child { width: 100%; }.builder-form { padding: 20px; }.builder-preview .preview-art { aspect-ratio: 16 / 11; } }
 </style>

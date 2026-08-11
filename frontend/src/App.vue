@@ -8,6 +8,7 @@ import UploadZone from './components/UploadZone.vue';
 import VoiceInput from './components/VoiceInput.vue';
 import LanguageVoiceSelector from './components/LanguageVoiceSelector.vue';
 import VideoPreview from './components/VideoPreview.vue';
+import AppButton from './components/ui/AppButton.vue';
 
 const store = useMemeStore();
 const voiceFilter = ref('all');
@@ -67,9 +68,7 @@ function chooseVoice(voice) {
             culturally directed comedy voices—without copying anyone else's identity.
           </p>
           <div class="hero-actions">
-            <button class="primary-button" type="button" @click="jumpToStudio">
-              Create my toon <span aria-hidden="true">→</span>
-            </button>
+            <AppButton variant="primary" arrow @click="jumpToStudio">Create my toon</AppButton>
             <a class="text-button" href="#how-it-works"><span aria-hidden="true">▶</span> See how it works</a>
           </div>
           <div class="hero-proof" aria-label="Product benefits">
@@ -153,15 +152,15 @@ function chooseVoice(voice) {
                 <span><small>Character</small><b>{{ store.selectedCharacter ? store.selectedCharacter.split('-')[0] : 'Not selected' }}</b></span>
                 <span><small>Voice</small><b>{{ store.inputMode === 'voice' ? 'Your recording' : store.voiceStyle.split('-').slice(0, 2).join(' ') }}</b></span>
               </div>
-              <button
+              <AppButton
                 class="generate-button"
-                type="button"
+                variant="primary"
                 :disabled="!store.canGenerate || store.isProcessing"
                 @click="store.generate()"
               >
                 <span>{{ store.isProcessing ? 'Making your toon…' : 'Make my toon' }}</span>
                 <b aria-hidden="true">{{ store.isProcessing ? '•••' : '→' }}</b>
-              </button>
+              </AppButton>
               <p class="consent-note">By creating, you confirm you have permission to use the uploaded media.</p>
             </aside>
           </div>
@@ -184,7 +183,7 @@ function chooseVoice(voice) {
 
         <div class="voice-toolbar">
           <div class="filter-pills" aria-label="Filter voice regions">
-            <button v-for="filter in [{id:'all',label:'All voices'}, {id:'india',label:'Across India'}, {id:'world',label:'Around the world'}]" :key="filter.id" type="button" :class="{ active: voiceFilter === filter.id }" @click="voiceFilter = filter.id">{{ filter.label }}</button>
+            <AppButton v-for="filter in [{id:'all',label:'All voices'}, {id:'india',label:'Across India'}, {id:'world',label:'Around the world'}]" :key="filter.id" variant="bare" :class="{ active: voiceFilter === filter.id }" @click="voiceFilter = filter.id">{{ filter.label }}</AppButton>
           </div>
           <span class="roadmap-label">100+ voice profiles · roadmap</span>
         </div>
@@ -200,7 +199,7 @@ function chooseVoice(voice) {
             <div class="voice-card-bottom">
               <span class="mini-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
               <small>{{ voice.sample }}</small>
-              <button v-if="voice.status === 'live'" type="button" :aria-label="`Use ${voice.name}`" @click="chooseVoice(voice)">Use <span>→</span></button>
+              <AppButton v-if="voice.status === 'live'" variant="bare" :aria-label="`Use ${voice.name}`" @click="chooseVoice(voice)">Use <span>→</span></AppButton>
             </div>
           </article>
         </div>
@@ -212,7 +211,7 @@ function chooseVoice(voice) {
             <h3>Speak naturally. Share globally.</h3>
             <p>Our goal is 200+ languages and dialects, with clear labels for what is live, in testing, and coming next.</p>
           </div>
-          <a href="#studio">Try the live voices <span>→</span></a>
+          <AppButton href="#studio" variant="outline" arrow>Try the live voices</AppButton>
         </div>
       </section>
 
@@ -273,7 +272,7 @@ function chooseVoice(voice) {
         <span class="cta-burst burst-right" aria-hidden="true">LOL</span>
         <p class="kicker">Your group chat is waiting</p>
         <h2>Make someone's day<br />a little more <em>toon.</em></h2>
-        <button class="primary-button dark-button" type="button" @click="jumpToStudio">Create my first toon <span>→</span></button>
+        <AppButton variant="primary" arrow @click="jumpToStudio">Create my first toon</AppButton>
         <small>Free preview · No account · Original characters</small>
       </section>
     </main>

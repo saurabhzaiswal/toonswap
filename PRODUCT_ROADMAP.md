@@ -19,7 +19,8 @@ be rejected with an original alternative.
 
 - Vue Router navigation for Home, Characters, Voices, guided Story Studio,
   animated Roadmap, Blog, Privacy, Terms, and Community Guidelines.
-- 24 illustrated original characters plus 108 structured blueprints across 12
+- 24 illustrated original characters plus 192 structured blueprints across 12 worlds
+- Consent-first self-insert characters: own photo, own/authorised voice, one reusable story reference, and 24-hour source retention
   original worlds and nine broad story roles.
 - A local custom-character brief builder covering silhouette, personality,
   movement, world role, palette, and prompt.

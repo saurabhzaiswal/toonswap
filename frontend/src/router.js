@@ -37,7 +37,7 @@ router.afterEach((to) => {
   };
   const descriptions = {
     home: 'Create original AI cartoon videos with editable scenes, custom characters, consent-first voices, and a worldwide language roadmap.',
-    characters: 'Explore 24 illustrated ToonSwap originals, 108 scalable character blueprints, and a custom original character designer.',
+    characters: 'Explore 24 illustrated ToonSwap originals, 216 scalable character blueprints, and a custom original character designer.',
     voices: 'Direct original cartoon performances by feeling, region, and language with consent-first voice controls and a 200+ language roadmap.',
     'story-studio': 'Plan a 15-second to 60-minute original cartoon in six simple steps with editable cast, voice, scenes, dialogue, movement, and camera.',
     roadmap: 'See ToonSwap’s six-step cartoon workflow, replaceable production layers, safety gates, backend milestones, and worldwide language roadmap.',

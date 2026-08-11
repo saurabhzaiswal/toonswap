@@ -3,7 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { v7 as uuidv7 } from 'uuid';
 import { PrismaService } from './prisma.service';
-import { StorageService } from './storage.service';
+import { StorageService } from '../media/storage.service';
 
 interface CreateJobInput {
   character: string;

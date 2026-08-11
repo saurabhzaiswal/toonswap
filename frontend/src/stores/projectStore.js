@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
 const storageKey = 'toonswap-project-studio-v1';
+const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const defaultScenes = [
   { id: 'scene-1', title: 'Meet the hero', duration: 8, character: 'Lead character', location: 'Opening location', action: 'Show the world, the hero, and what they want.', dialogue: '', expression: 'curious', camera: 'Wide establishing shot', audioMode: 'Narration', changeScope: 'Keep everything', continuity: '' },
   { id: 'scene-2', title: 'A funny surprise', duration: 10, character: 'Full cast', location: 'Main location', action: 'A playful problem changes the plan.', dialogue: '', expression: 'surprised', camera: 'Medium action shot', audioMode: 'Dialogue', changeScope: 'Keep everything', continuity: '' },
@@ -16,6 +17,12 @@ export const useProjectStore = defineStore('projectStudio', {
     hydrated: false,
     characterDrafts: [],
     selectedVoice: null,
+    storyIdeaAudio: { file: null, name: '', duration: 0 },
+    selfInsert: {
+      displayName: 'Me in the story', photoFile: null, photoPreviewUrl: '', voiceFile: null, voiceName: '',
+      voiceMode: 'as-is', voiceStyle: 'warm-story', consentIdentity: false, consentRetention: false,
+      savedCharacterId: '', assetId: '', ownerSessionId: '', status: 'local-draft', uploadError: '',
+    },
     project: {
       title: 'Untitled ToonSwap story',
       prompt: '',
@@ -53,6 +60,7 @@ export const useProjectStore = defineStore('projectStudio', {
         }));
         if (Array.isArray(saved?.characterDrafts)) this.characterDrafts = saved.characterDrafts;
         if (saved?.selectedVoice) this.selectedVoice = saved.selectedVoice;
+        if (saved?.selfInsert) this.selfInsert = { ...this.selfInsert, ...saved.selfInsert, photoFile: null, photoPreviewUrl: '', voiceFile: null, voiceName: '', uploadError: '' };
       } catch {
         // A corrupt local draft should not block the studio.
       }
@@ -65,6 +73,11 @@ export const useProjectStore = defineStore('projectStudio', {
         scenes: this.scenes,
         characterDrafts: this.characterDrafts,
         selectedVoice: this.selectedVoice,
+        selfInsert: {
+          displayName: this.selfInsert.displayName, voiceMode: this.selfInsert.voiceMode, voiceStyle: this.selfInsert.voiceStyle,
+          consentIdentity: false, consentRetention: false, savedCharacterId: this.selfInsert.savedCharacterId, assetId: this.selfInsert.assetId,
+          ownerSessionId: this.selfInsert.ownerSessionId, status: this.selfInsert.status,
+        },
       }));
     },
     saveCharacter(draft) {
@@ -75,6 +88,76 @@ export const useProjectStore = defineStore('projectStudio', {
     },
     selectVoice(voice) {
       this.selectedVoice = voice;
+      this.persist();
+    },
+    setStoryIdeaAudio(file, duration = 0) {
+      this.storyIdeaAudio = { file, name: file?.name || 'Spoken story idea', duration };
+    },
+    setSelfInsertPhoto(file) {
+      if (this.selfInsert.photoPreviewUrl) URL.revokeObjectURL(this.selfInsert.photoPreviewUrl);
+      this.selfInsert.photoFile = file;
+      this.selfInsert.photoPreviewUrl = file ? URL.createObjectURL(file) : '';
+      this.selfInsert.status = 'local-draft';
+    },
+    setSelfInsertVoice(file) {
+      this.selfInsert.voiceFile = file;
+      this.selfInsert.voiceName = file?.name || '';
+      this.selfInsert.status = 'local-draft';
+    },
+    addSelfInsertToCast() {
+      if ((!this.selfInsert.photoFile && !this.selfInsert.voiceFile) || !this.selfInsert.consentIdentity || !this.selfInsert.consentRetention) return null;
+      const id = this.selfInsert.savedCharacterId || createId('self-insert');
+      const character = {
+        id, name: this.selfInsert.displayName.trim() || 'Me in the story', role: 'Consented self-insert', source: 'self-insert',
+        hasPhoto: Boolean(this.selfInsert.photoFile), hasVoice: Boolean(this.selfInsert.voiceFile), voiceMode: this.selfInsert.voiceMode,
+        status: 'local-sensitive-draft', personality: 'Directed by the creator', world: 'Your selected story world',
+      };
+      const cast = this.project.cast.filter((item) => item.id !== id);
+      this.project.cast = [character, ...cast];
+      this.selfInsert.savedCharacterId = id;
+      this.selfInsert.status = 'ready-for-consented-upload';
+      this.persist();
+      return character;
+    },
+    async uploadSelfInsertReference() {
+      if (!backendOrigin) return { configured: false };
+      const form = new FormData();
+      if (this.selfInsert.photoFile) form.append('photo', this.selfInsert.photoFile);
+      if (this.selfInsert.voiceFile) form.append('voice', this.selfInsert.voiceFile);
+      if (this.selfInsert.ownerSessionId) form.append('ownerSessionId', this.selfInsert.ownerSessionId);
+      form.append('displayName', this.selfInsert.displayName.trim() || 'Me in the story');
+      form.append('voiceMode', this.selfInsert.voiceMode === 'convert' ? 'CONVERT' : 'AS_IS');
+      if (this.selfInsert.voiceMode === 'convert') form.append('voiceStyle', this.selfInsert.voiceStyle);
+      form.append('likenessAuthorized', String(this.selfInsert.consentIdentity && Boolean(this.selfInsert.photoFile)));
+      form.append('voiceAuthorized', String(this.selfInsert.consentIdentity && Boolean(this.selfInsert.voiceFile)));
+      form.append('retentionAccepted', String(this.selfInsert.consentRetention));
+      form.append('scriptText', this.project.prompt);
+      this.selfInsert.status = 'uploading';
+      this.selfInsert.uploadError = '';
+      try {
+        const response = await fetch(`${backendOrigin}/api/self-insert/assets`, { method: 'POST', body: form });
+        if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'Secure self-insert upload failed');
+        const result = await response.json();
+        this.selfInsert.assetId = result.assetId;
+        this.selfInsert.ownerSessionId = result.ownerSessionId;
+        this.selfInsert.status = String(result.status || 'DRAFT').toLowerCase();
+        this.project.cast = this.project.cast.map((item) => item.id === this.selfInsert.savedCharacterId ? { ...item, selfInsertAssetId: result.assetId, referenceStatus: result.status } : item);
+        this.persist();
+        return { configured: true, ...result };
+      } catch (error) {
+        this.selfInsert.status = 'upload-failed';
+        this.selfInsert.uploadError = error instanceof Error ? error.message : 'Secure self-insert upload failed';
+        return { configured: true, error: this.selfInsert.uploadError };
+      }
+    },
+    async clearSelfInsert() {
+      if (backendOrigin && this.selfInsert.assetId && this.selfInsert.ownerSessionId) {
+        await fetch(`${backendOrigin}/api/self-insert/assets/${this.selfInsert.assetId}`, { method: 'DELETE', headers: { 'x-toonswap-session': this.selfInsert.ownerSessionId } }).catch(() => null);
+      }
+      if (this.selfInsert.photoPreviewUrl) URL.revokeObjectURL(this.selfInsert.photoPreviewUrl);
+      const id = this.selfInsert.savedCharacterId;
+      this.project.cast = this.project.cast.filter((item) => item.id !== id);
+      this.selfInsert = { displayName: 'Me in the story', photoFile: null, photoPreviewUrl: '', voiceFile: null, voiceName: '', voiceMode: 'as-is', voiceStyle: 'warm-story', consentIdentity: false, consentRetention: false, savedCharacterId: '', assetId: '', ownerSessionId: '', status: 'local-draft', uploadError: '' };
       this.persist();
     },
     updateProject(updates) {

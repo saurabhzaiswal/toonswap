@@ -13,6 +13,22 @@ const worlds = [
 const roles = [
   ['tinkerer', 'Tinkerer', 'bit', 'Curious, resourceful, delightfully chaotic', 'Fast hands and careful tiptoes'],
   ['trickster', 'Trickster', 'wink', 'Playful, clever, never cruel', 'Elastic takes and mischievous pauses'],
+  ['guardian', 'Guardian', 'ram', 'Protective, gentle, secretly dramatic', 'Grounded weight and heroic turns'],
+  ['scout', 'Scout', 'zip', 'Brave, observant, easily excited', 'Quick dashes and alert poses'],
+  ['storyteller', 'Storyteller', 'tale', 'Warm, imaginative, master of suspense', 'Expressive hands and rhythmic beats'],
+  ['musician', 'Musician', 'rum', 'Joyful, sensitive, always finds a rhythm', 'Full-body groove and musical accents'],
+  ['healer', 'Healer', 'moss', 'Patient, funny, connected to nature', 'Soft arcs and reassuring stillness'],
+  ['detective', 'Detective', 'lens', 'Observant, deadpan, confidently wrong sometimes', 'Measured walks and sudden reveals'],
+  ['dreamer', 'Dreamer', 'loo', 'Inventive, kind, frequently lost in thought', 'Floaty timing and oversized reactions'],
+  ['rival', 'Friendly Rival', 'dash', 'Competitive, loyal, secretly generous', 'Confident starts and sheepish recoveries'],
+  ['reluctant-hero', 'Reluctant Hero', 'mumble', 'Cautious, capable, surprised by courage', 'Hesitant wind-ups and committed finishes'],
+  ['shapechanger', 'Shapechanger', 'morph', 'Adaptable, theatrical, always experimenting', 'Silhouette swaps and liquid transitions'],
+  ['mentor', 'Unusual Mentor', 'sage', 'Wise, eccentric, happily imperfect', 'Economical gestures and perfectly timed chaos'],
+  ['captain', 'Team Captain', 'helm', 'Organised, optimistic, occasionally overprepared', 'Decisive points and rallying poses'],
+  ['monster-friend', 'Monster Friend', 'bloom', 'Enormous, tender, afraid of tiny noises', 'Heavy landings and delicate fingertip acting'],
+  ['speedster', 'Speedster', 'flash', 'Restless, helpful, learns to slow down', 'Smear-frame bursts and statue-still stops'],
+  ['reporter', 'Curious Reporter', 'scoop', 'Fearless, nosy, committed to the full story', 'Forward-leaning walks and rapid note-taking'],
+  ['tiny-giant', 'Tiny Giant', 'thump', 'Small in size, huge in confidence and heart', 'Miniature power poses and oversized anticipation'],
 ];
 const languages = [
   ['bhojpuri', 'Bhojpuri', 'Purvanchal, India'], ['kannada', 'Kannada', 'Karnataka, India'], ['tamil', 'Tamil', 'Tamil Nadu, India'],
@@ -40,8 +56,8 @@ const liveVoices = [
 async function seed() {
   const characters = worlds.flatMap(([worldId, worldName, era, prefix], worldIndex) => roles.map(([roleId, role, suffix, personality, movement], roleIndex) => ({
     id: `${worldId}-${roleId}`, slug: `${worldId}-${roleId}`, name: `${prefix}${suffix}`, worldId, worldName, era, archetype: role,
-    personality, movementStyle: { signature: movement }, visualBrief: { atlas: '/art/character-atlas.png', artIndex: worldIndex * 2 + roleIndex },
-    imageUrl: '/art/character-atlas.png', tags: [era, role], status: CatalogStatus.LIVE,
+    personality, movementStyle: { signature: movement }, visualBrief: { atlas: roleIndex < 2 ? '/art/character-atlas.png' : null, artIndex: roleIndex < 2 ? worldIndex * 2 + roleIndex : null },
+    imageUrl: roleIndex < 2 ? '/art/character-atlas.png' : null, tags: [era, role], status: roleIndex < 2 ? CatalogStatus.LIVE : CatalogStatus.PLANNED,
   })));
   const roadmapVoices = languages.flatMap(([languageCode, languageName, region], languageIndex) => directions.map(([directionId, name, direction], directionIndex) => ({
     id: `${languageCode}-${directionId}`, slug: `${languageCode}-${directionId}`, name, languageCode, languageName, region, direction,
@@ -55,7 +71,7 @@ async function seed() {
 
   await Promise.all(characters.map((data) => prisma.character.upsert({ where: { slug: data.slug }, update: data, create: data })));
   await Promise.all([...workingVoices, ...roadmapVoices].map((data) => prisma.voiceProfile.upsert({ where: { slug: data.slug }, update: data, create: data })));
-  console.log(`Seeded ${characters.length} illustrated characters and ${workingVoices.length + roadmapVoices.length} voice profiles.`);
+  console.log(`Seeded ${characters.length} character records (24 illustrated) and ${workingVoices.length + roadmapVoices.length} voice profiles.`);
 }
 
 seed().finally(() => prisma.$disconnect());

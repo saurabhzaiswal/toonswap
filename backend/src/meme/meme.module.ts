@@ -3,12 +3,12 @@ import { BullModule } from '@nestjs/bullmq';
 import { MemeController } from './meme.controller';
 import { MemeService, MEME_QUEUE_NAME } from './meme.service';
 import { MemeProcessor } from './meme.processor';
-import { StorageService } from './storage.service';
 import { AudioGeneratorService } from './audio-generator.service';
+import { MediaStorageModule } from '../media/media-storage.module';
 
 @Module({
-  imports: [BullModule.registerQueue({ name: MEME_QUEUE_NAME })],
+  imports: [BullModule.registerQueue({ name: MEME_QUEUE_NAME }), MediaStorageModule],
   controllers: [MemeController],
-  providers: [MemeService, MemeProcessor, StorageService, AudioGeneratorService],
+  providers: [MemeService, MemeProcessor, AudioGeneratorService],
 })
 export class MemeModule {}

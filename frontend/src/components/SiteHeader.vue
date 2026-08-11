@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import AppButton from './ui/AppButton.vue';
 
 const menuOpen = ref(false);
 const route = useRoute();
@@ -34,10 +35,10 @@ function closeMenu() {
 
       <div class="header-actions">
         <span class="original-pill"><span></span> Original IP only</span>
-        <RouterLink class="small-cta" to="/story-studio">Build a story</RouterLink>
-        <button class="menu-button" type="button" :aria-expanded="menuOpen" aria-label="Toggle navigation" @click="menuOpen = !menuOpen">
+        <AppButton class="header-cta text-sm max-h-5" to="/story-studio" variant="primary">Build a story</AppButton>
+        <AppButton class="menu-button" variant="bare" icon-only :aria-expanded="menuOpen" aria-label="Toggle navigation" @click="menuOpen = !menuOpen">
           <span></span><span></span>
-        </button>
+        </AppButton>
       </div>
     </div>
     <nav v-if="menuOpen" class="mobile-nav platform-mobile-nav" aria-label="Mobile navigation">

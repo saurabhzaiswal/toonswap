@@ -1,20 +1,22 @@
-$ink: #171321;
-$muted: #666273;
-$paper: #fffdf9;
-$canvas: #fbf6ee;
-$line: #ded5c8;
-$coral: #ff624d;
-$mint: #55cdbd;
-$violet: #7152f3;
-$gold: #ffc94a;
-$shadow-soft: 0 18px 50px rgba(39, 26, 14, 0.09);
-$shadow-lift: 0 24px 70px rgba(39, 26, 14, 0.14);
+$ink: var(--color-ink);
+$muted: var(--color-muted);
+$paper: var(--color-surface);
+$canvas: var(--color-canvas);
+$soft: var(--color-soft);
+$line: var(--color-border);
+$coral: var(--color-primary);
+$mint: var(--color-secondary);
+$violet: var(--color-tertiary);
+$gold: var(--color-accent);
+$shadow-soft: var(--shadow-soft);
+$shadow-lift: var(--shadow-lift);
+$shadow: var(--shadow-soft);
 $radius-sm: 14px;
 $radius-md: 22px;
 $radius-lg: 34px;
 
 @mixin focus-ring($color: $violet) {
-  outline: 3px solid rgba($color, 0.24);
+  outline: 3px solid color-mix(in srgb, #{$color} 24%, transparent);
   outline-offset: 2px;
 }
 

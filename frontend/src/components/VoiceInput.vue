@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { useMemeStore } from '../stores/memeStore';
+import AppButton from './ui/AppButton.vue';
 
 const store = useMemeStore();
 const isRecording = ref(false);
@@ -52,8 +53,8 @@ onBeforeUnmount(() => activeStream?.getTracks().forEach((track) => track.stop())
     </div>
 
     <div class="mode-switch" aria-label="Choose voice input mode">
-      <button type="button" :class="{ active: store.inputMode === 'text' }" @click="store.inputMode = 'text'">Type a line</button>
-      <button type="button" :class="{ active: store.inputMode === 'voice' }" @click="store.inputMode = 'voice'">Record my voice</button>
+      <AppButton variant="bare" :class="{ active: store.inputMode === 'text' }" @click="store.inputMode = 'text'">Type a line</AppButton>
+      <AppButton variant="bare" :class="{ active: store.inputMode === 'voice' }" @click="store.inputMode = 'voice'">Record my voice</AppButton>
     </div>
 
     <div v-if="store.inputMode === 'text'" class="script-field">
@@ -67,7 +68,7 @@ onBeforeUnmount(() => activeStream?.getTracks().forEach((track) => track.stop())
         <b>{{ isRecording ? 'Listening…' : store.voiceFile ? 'Voice clip ready' : 'Record up to 15 seconds' }}</b>
         <small>{{ isRecording ? 'Say your line naturally' : store.voiceFile ? 'Record again whenever you like' : 'A quiet room sounds best' }}</small>
       </div>
-      <button type="button" @click="isRecording ? stopRecording() : startRecording()">{{ isRecording ? 'Stop' : store.voiceFile ? 'Redo' : 'Record' }}</button>
+      <AppButton variant="bare" @click="isRecording ? stopRecording() : startRecording()">{{ isRecording ? 'Stop' : store.voiceFile ? 'Redo' : 'Record' }}</AppButton>
     </div>
     <p v-if="recordingError" class="field-error" role="alert">{{ recordingError }}</p>
   </section>

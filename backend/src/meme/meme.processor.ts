@@ -8,23 +8,24 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import { PrismaService } from './prisma.service';
-import { StorageService } from './storage.service';
+import { StorageService } from '../media/storage.service';
 import { AudioGeneratorService } from './audio-generator.service';
 import { MEME_QUEUE_NAME } from './meme.service';
 
 // Maps our internal (original, non-infringing) character names to their
 // base template video + reference voice-model asset stored in our bucket.
+const TEMPLATE_ASSET_BASE_URL = process.env.TEMPLATE_ASSET_BASE_URL || 'https://toonswap.vercel.app';
 const CHARACTER_TEMPLATES: Record<string, { templateVideoUrl: string; voiceModelId: string }> = {
   'chulbul-the-naughty-kid': {
-    templateVideoUrl: 'https://assets.toonswap.app/templates/chulbul_base.mp4',
+    templateVideoUrl: `${TEMPLATE_ASSET_BASE_URL}/templates/chulbul_base.mp4`,
     voiceModelId: 'toonswap-chulbul-v1',
   },
   'robo-guru': {
-    templateVideoUrl: 'https://assets.toonswap.app/templates/robo_guru_base.mp4',
+    templateVideoUrl: `${TEMPLATE_ASSET_BASE_URL}/templates/robo_guru_base.mp4`,
     voiceModelId: 'toonswap-robo-guru-v1',
   },
   'ninja-chotu': {
-    templateVideoUrl: 'https://assets.toonswap.app/templates/ninja_chotu_base.mp4',
+    templateVideoUrl: `${TEMPLATE_ASSET_BASE_URL}/templates/ninja_chotu_base.mp4`,
     voiceModelId: 'toonswap-ninja-chotu-v1',
   },
 };

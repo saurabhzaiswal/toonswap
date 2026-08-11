@@ -5,6 +5,7 @@ import { AppConfigModule } from './config/config.module';
 import { MemeModule } from './meme/meme.module';
 import { DatabaseModule } from './database/database.module';
 import { StudioModule } from './studio/studio.module';
+import { SelfInsertModule } from './self-insert/self-insert.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { StudioModule } from './studio/studio.module';
     }),
     MemeModule,
     StudioModule,
+    SelfInsertModule,
   ],
 })
 export class AppModule {}

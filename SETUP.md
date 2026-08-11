@@ -76,7 +76,11 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 
 REPLICATE_API_TOKEN=
+REPLICATE_SELF_INSERT_MODEL=
 ELEVENLABS_API_KEY=
+ELEVENLABS_SELF_INSERT_VOICE_MAP={}
+SELF_INSERT_PROVIDER_ENABLED=false
+SELF_INSERT_MEDIA_MODERATION_ENABLED=false
 
 S3_REGION=auto
 S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
@@ -84,6 +88,7 @@ S3_BUCKET=toonswap-dev
 S3_PUBLIC_BASE_URL=https://<development-public-domain>
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
+TEMPLATE_ASSET_BASE_URL=https://toonswap.vercel.app
 ```
 
 Then create the Prisma client and local schema and start NestJS:
@@ -97,6 +102,7 @@ npm run start:dev
 
 The API listens on `http://localhost:3000`. Short-form generation routes are
 under `/api/meme`; scalable story/catalog routes are under `/api/studio`.
+Consent-first reusable photo/voice records are under `/api/self-insert`.
 `GET /api/studio/capabilities` reports which production capabilities are real
 and which still require provider integration.
 
@@ -206,10 +212,14 @@ deleted after each job.
   The current code does not parse `REDIS_URL` or configure Redis TLS, so add that
   support before choosing a provider that requires a TLS URL.
 - `REPLICATE_API_TOKEN`: dedicated production token.
+- `REPLICATE_SELF_INSERT_MODEL`: reviewed, pinned Replicate model version used to create one reusable original character reference.
 - `ELEVENLABS_API_KEY`: restricted production key with an explicit usage cap.
+- `ELEVENLABS_SELF_INSERT_VOICE_MAP`: JSON map from internal original voice-style IDs to approved provider voice IDs.
+- `SELF_INSERT_PROVIDER_ENABLED` and `SELF_INSERT_MEDIA_MODERATION_ENABLED`: both must remain `false` until provider review, cost controls, and media moderation are production-ready.
 - `S3_REGION`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`:
   S3/R2 write credentials and target.
-- `S3_PUBLIC_BASE_URL`: public read origin used to construct stored object URLs.
+- `S3_PUBLIC_BASE_URL`: public read origin for ordinary generated previews. Self-insert source and reference media stays private and is accessed by short-lived signed URLs.
+- `TEMPLATE_ASSET_BASE_URL`: current Vercel/static origin for owned template assets.
 
 Set secrets in the hosting provider's secret manager, not in committed env files
 or build arguments. Keep development, staging, and production credentials
@@ -217,7 +227,7 @@ separate.
 
 ### Frontend API routing
 
-The current frontend uses the relative base `/api/meme`. For production, choose
+The frontend uses `VITE_API_BASE_URL` as the backend origin and appends `/api/meme` or `/api/self-insert`. For production, choose
 one of these approaches before deployment:
 
 1. Add a Vercel rewrite from `/api/:path*` to the deployed backend. This keeps
@@ -247,11 +257,11 @@ deployment.
 - Use provider-native TLS and private networking. Update the current Redis
   connection configuration if the chosen service requires TLS or a single URL.
 
-### S3/R2 bucket, public access, and CORS
+### S3/R2 bucket, private identity media, public outputs, and CORS
 
 For R2, create separate staging and production buckets and scoped write
-credentials. Set `S3_ENDPOINT` to the account's S3 API endpoint, `S3_REGION` to
-`auto`, and `S3_PUBLIC_BASE_URL` to the read domain. Cloudflare recommends an R2
+credentials. Keep self-insert selfie, voice, and generated identity-reference keys private; the backend signs provider reads for a short window and removes expired records through the retention queue. Set `S3_ENDPOINT` to the account's S3 API endpoint, `S3_REGION` to
+`auto`, and `S3_PUBLIC_BASE_URL` to the read domain for non-sensitive preview outputs only. Cloudflare recommends an R2
 custom domain for production; its `r2.dev` URL is intended for development
 traffic. See [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 

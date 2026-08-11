@@ -1,5 +1,6 @@
 <script setup>
 import { useMemeStore } from '../stores/memeStore';
+import AppButton from './ui/AppButton.vue';
 
 const store = useMemeStore();
 
@@ -21,11 +22,11 @@ const loadingLines = {
     <div v-else-if="store.status === 'DONE'" class="result-ready">
       <div><p class="kicker">Ready to make someone smile</p><h3>Your toon has arrived.</h3></div>
       <video :src="store.outputUrl" controls autoplay loop playsinline />
-      <div class="result-actions"><a :href="store.outputUrl" download class="generate-button">Download preview <span>↓</span></a><button type="button" @click="store.reset()">Make another</button></div>
+      <div class="result-actions"><AppButton :href="store.outputUrl" download="" variant="primary"><template #icon>↓</template>Download preview</AppButton><AppButton variant="outline" @click="store.reset()">Make another</AppButton></div>
     </div>
 
     <div v-else-if="store.status === 'FAILED'" class="result-error">
-      <span aria-hidden="true">!</span><div><h3>That take did not land.</h3><p>{{ store.errorMessage }}</p></div><button type="button" @click="store.reset()">Try again</button>
+      <span aria-hidden="true">!</span><div><h3>That take did not land.</h3><p>{{ store.errorMessage }}</p></div><AppButton variant="outline" @click="store.reset()">Try again</AppButton>
     </div>
   </section>
 </template>
