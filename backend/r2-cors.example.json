@@ -1,6 +1,6 @@
 [
   {
-    "AllowedOrigins": ["http://localhost:4173", "https://toonswap.vercel.app"],
+    "AllowedOrigins": ["http://localhost:5173", "https://toonswap-kappa.vercel.app"],
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["Content-Type"],
     "ExposeHeaders": ["ETag"],

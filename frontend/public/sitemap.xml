@@ -1,80 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://toonswap.vercel.app/</loc>
+    <loc>https://toonswap-kappa.vercel.app/</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/og.png</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/og-social.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/roadmap</loc>
+    <loc>https://toonswap-kappa.vercel.app/roadmap</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/original-characters-without-copying</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/original-characters-without-copying</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/original-characters-without-copying.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/original-characters-without-copying.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/directing-comedy-across-languages</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/directing-comedy-across-languages</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/directing-comedy-across-languages.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/directing-comedy-across-languages.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/scene-by-scene-animation-workflow</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/scene-by-scene-animation-workflow</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/scene-by-scene-animation-workflow.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/scene-by-scene-animation-workflow.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/consent-first-family-stories</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/consent-first-family-stories</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/consent-first-family-stories.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/consent-first-family-stories.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/designing-stone-to-space-worlds</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/designing-stone-to-space-worlds</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/designing-stone-to-space-worlds.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/designing-stone-to-space-worlds.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/blog/one-hour-animation-cost-plan</loc>
+    <loc>https://toonswap-kappa.vercel.app/blog/one-hour-animation-cost-plan</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image><image:loc>https://toonswap.vercel.app/art/blog/one-hour-animation-cost-plan.jpg</image:loc></image:image>
+    <image:image><image:loc>https://toonswap-kappa.vercel.app/art/blog/one-hour-animation-cost-plan.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/privacy</loc>
+    <loc>https://toonswap-kappa.vercel.app/privacy</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/terms</loc>
+    <loc>https://toonswap-kappa.vercel.app/terms</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://toonswap.vercel.app/community-guidelines</loc>
+    <loc>https://toonswap-kappa.vercel.app/community-guidelines</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

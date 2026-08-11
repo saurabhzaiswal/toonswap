@@ -6,13 +6,13 @@ const journey = [
   {
     number: '01',
     title: 'Choose a world',
-    text: 'Pick an original era and visual feeling—from prehistoric invention comedy to a future eco-city.',
+    text: 'Pick an original era and visual feeling - from prehistoric invention comedy to a future eco-city.',
     state: 'Available in UI',
   },
   {
     number: '02',
     title: 'Build the cast',
-    text: 'Choose illustrated originals, save a custom design, or—with explicit consent—add your own photo and voice as one reusable story character.',
+    text: 'Choose illustrated originals, save a custom design, or - with explicit consent - add your own photo and voice as one reusable story character.',
     state: 'Self-insert foundation available',
   },
   {
@@ -156,7 +156,7 @@ const phases = [
     <section class="phases-section section-pad">
       <header>
         <p class="kicker">Build roadmap</p>
-        <h2>What works now—and what still needs engineering.</h2>
+        <h2>What works now - and what still needs engineering.</h2>
         <p>
           No “AI magic” label is used to hide missing infrastructure. Public launch requires
           provider adapters, moderation, native review, cost approval, secure storage, and resumable

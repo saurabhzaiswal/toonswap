@@ -1,21 +1,20 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import SiteHeader from '../components/SiteHeader.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import UiInput from '../components/ui/UiInput.vue';
 import UiSelect from '../components/ui/UiSelect.vue';
-import { apiFetch } from '../lib/api';
+import { useAdminStore } from '../stores/adminStore';
 
+const admin = useAdminStore();
+const { overview, users, jobs, activity, loading, error } = storeToRefs(admin);
 const tab = ref('users');
-const loading = ref(true);
-const error = ref('');
-const overview = ref(null);
-const users = ref({ items: [], pagination: { page: 1, pages: 1, total: 0 } });
-const jobs = ref({ items: [], pagination: { page: 1, pages: 1, total: 0 } });
 const search = ref('');
 const status = ref('');
 const role = ref('');
+const action = ref('');
 const page = ref(1);
 let debounce;
 
@@ -39,54 +38,42 @@ const jobStatusOptions = [
 const title = computed(() =>
   tab.value === 'users'
     ? `${users.value.pagination.total} accounts`
-    : `${jobs.value.pagination.total} generation jobs`,
+    : tab.value === 'jobs'
+      ? `${jobs.value.pagination.total} generation jobs`
+      : `${activity.value.pagination.total} activity events`,
+);
+const currentPage = computed(() =>
+  tab.value === 'users' ? users.value : tab.value === 'jobs' ? jobs.value : activity.value,
 );
 
 async function loadOverview() {
-  overview.value = await apiFetch('/admin/overview');
+  await admin.loadOverview();
 }
 async function loadTable() {
-  loading.value = true;
-  error.value = '';
-  try {
-    const params = new URLSearchParams({ page: String(page.value), pageSize: '20' });
-    if (search.value.trim()) params.set('search', search.value.trim());
-    if (status.value) params.set('status', status.value);
-    if (tab.value === 'users' && role.value) params.set('role', role.value);
-    const data = await apiFetch(`/admin/${tab.value}?${params}`);
-    if (tab.value === 'users') users.value = data;
-    else jobs.value = data;
-  } catch (cause) {
-    error.value = cause.message;
-  } finally {
-    loading.value = false;
-  }
+  await admin.loadTable(tab.value, {
+    page: page.value,
+    search: search.value,
+    status: status.value,
+    role: role.value,
+    action: action.value,
+  });
 }
 async function changeStatus(user) {
   const next = user.status === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED';
   const reason =
     next === 'BLOCKED' ? window.prompt('Reason for blocking this account:', 'Policy review') : '';
   if (next === 'BLOCKED' && reason === null) return;
-  await apiFetch(`/admin/users/${user.id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: next, reason }),
-  });
+  await admin.changeStatus(user, next, reason);
   await Promise.all([loadOverview(), loadTable()]);
 }
 async function changeRole(user) {
   const next = user.role === 'ADMIN' ? 'USER' : 'ADMIN';
   if (!window.confirm(`Change ${user.email} to ${next}?`)) return;
-  await apiFetch(`/admin/users/${user.id}/role`, {
-    method: 'PATCH',
-    body: JSON.stringify({ role: next }),
-  });
+  await admin.changeRole(user, next);
   await loadTable();
 }
 async function makeUnlimited(user) {
-  await apiFetch(`/admin/users/${user.id}/usage-policy`, {
-    method: 'PATCH',
-    body: JSON.stringify({ unlimited: true, note: 'Admin dashboard override' }),
-  });
+  await admin.makeUnlimited(user);
   await loadTable();
 }
 function selectTab(value) {
@@ -95,6 +82,7 @@ function selectTab(value) {
   search.value = '';
   status.value = '';
   role.value = '';
+  action.value = '';
   loadTable();
 }
 function formatDate(value) {
@@ -104,7 +92,7 @@ function formatDate(value) {
       )
     : 'Never';
 }
-watch([search, status, role], () => {
+watch([search, status, role, action], () => {
   clearTimeout(debounce);
   debounce = setTimeout(() => {
     page.value = 1;
@@ -123,7 +111,7 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
           <p>Role-protected control room</p>
           <h1>ToonSwap admin</h1>
           <span
-            >Fast account, safety, and generation operations—with every sensitive change
+            >Fast account, safety, and generation operations - with every sensitive change
             auditable.</span
           >
         </div>
@@ -153,6 +141,9 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
           ><button :class="{ active: tab === 'jobs' }" @click="selectTab('jobs')">
             Generation jobs
           </button>
+          <button :class="{ active: tab === 'activity' }" @click="selectTab('activity')">
+            Activity log
+          </button>
         </div>
         <div class="panel-heading">
           <div>
@@ -163,12 +154,25 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
             <UiInput
               v-model="search"
               label="Search"
-              :placeholder="tab === 'users' ? 'Email, name, city…' : 'Job ID or user email…'"
+              :placeholder="
+                tab === 'users'
+                  ? 'Email, name, city…'
+                  : tab === 'jobs'
+                    ? 'Job ID or user email…'
+                    : 'Action, person, or entity…'
+              "
             /><UiSelect
+              v-if="tab !== 'activity'"
               v-model="status"
               label="Status"
               :options="tab === 'users' ? statusOptions : jobStatusOptions"
             /><UiSelect v-if="tab === 'users'" v-model="role" label="Role" :options="roleOptions" />
+            <UiInput
+              v-if="tab === 'activity'"
+              v-model="action"
+              label="Exact action (optional)"
+              placeholder="USER_BLOCKED"
+            />
           </div>
         </div>
         <p v-if="error" class="error" role="alert">{{ error }}</p>
@@ -226,7 +230,7 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
               </tr>
             </tbody>
           </table>
-          <table v-else>
+          <table v-else-if="tab === 'jobs'">
             <thead>
               <tr>
                 <th>Job</th>
@@ -257,13 +261,38 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
               </tr>
             </tbody>
           </table>
+          <table v-else>
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Actor / subject</th>
+                <th>Entity</th>
+                <th>Description</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in activity.items" :key="event.id">
+                <td>
+                  <span class="badge">{{ event.action }}</span>
+                </td>
+                <td>
+                  <strong>{{ event.actor?.name || event.actor?.email || 'System' }}</strong>
+                  <small v-if="event.subject">
+                    Subject: {{ event.subject.name || event.subject.email }}
+                  </small>
+                </td>
+                <td>
+                  <strong>{{ event.entityName || event.entityType || ' - ' }}</strong>
+                  <small>{{ event.entityType || 'General' }}</small>
+                </td>
+                <td>{{ event.description || 'Recorded activity' }}</td>
+                <td>{{ formatDate(event.createdAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
           <div v-if="loading" class="loading">Loading the latest data…</div>
-          <div
-            v-else-if="(tab === 'users' ? users.items : jobs.items).length === 0"
-            class="loading"
-          >
-            No matching records.
-          </div>
+          <div v-else-if="currentPage.items.length === 0" class="loading">No matching records.</div>
         </div>
         <div class="pagination">
           <AppButton
@@ -275,13 +304,11 @@ onMounted(() => Promise.all([loadOverview(), loadTable()]));
               loadTable();
             "
             >← Previous</AppButton
-          ><span
-            >Page {{ page }} of
-            {{ tab === 'users' ? users.pagination.pages : jobs.pagination.pages }}</span
+          ><span>Page {{ page }} of {{ currentPage.pagination.pages }}</span
           ><AppButton
             size="sm"
             variant="outline"
-            :disabled="page >= (tab === 'users' ? users.pagination.pages : jobs.pagination.pages)"
+            :disabled="page >= currentPage.pagination.pages"
             @click="
               page++;
               loadTable();

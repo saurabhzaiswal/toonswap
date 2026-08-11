@@ -52,8 +52,8 @@ const featuredPost = blogPosts[0];
           <h2>Make something unmistakably yours.</h2>
         </div>
         <p>
-          Clear, useful articles for first-time creators and experienced storytellers—without legal
-          fog or production jargon.
+          Clear, useful articles for first-time creators and experienced storytellers - without
+          legal fog or production jargon.
         </p>
       </div>
 

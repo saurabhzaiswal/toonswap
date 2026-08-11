@@ -1,7 +1,7 @@
 import { blogPosts } from './data/platformCatalog.js';
 
-const SITE_URL = 'https://toonswap.vercel.app';
-const DEFAULT_IMAGE = `${SITE_URL}/og.png`;
+const SITE_URL = 'https://toonswap-kappa.vercel.app';
+const DEFAULT_IMAGE = `${SITE_URL}/og-social.jpg`;
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const FOUNDER_ID = `${SITE_URL}/#founder`;
@@ -144,7 +144,7 @@ function getPageDetails(route) {
       image: absoluteUrl(post.cover),
       imageWidth: '1400',
       imageHeight: '788',
-      imageAlt: `${post.title} — original ToonSwap editorial illustration`,
+      imageAlt: `${post.title} - original ToonSwap editorial illustration`,
       post,
     };
   }
@@ -152,8 +152,8 @@ function getPageDetails(route) {
   return {
     ...(pageSeo[route.name] || pageSeo.home),
     image: DEFAULT_IMAGE,
-    imageWidth: '600',
-    imageHeight: '315',
+    imageWidth: '1200',
+    imageHeight: '630',
     imageAlt: 'Three original ToonSwap characters with the message Your face. Their world.',
     post: null,
   };
@@ -403,13 +403,14 @@ export function applySeo(route) {
 
   setMetaProperty('og:type', details.post ? 'article' : 'website');
   setMetaProperty('og:site_name', 'ToonSwap');
-  setMetaProperty('og:locale', 'en_IN');
+  setMetaProperty('og:locale', 'en_US');
   setMetaProperty('og:url', canonicalUrl);
   setMetaProperty('og:title', details.title);
   setMetaProperty('og:description', details.description);
   setMetaProperty('og:image', details.image);
+  setMetaProperty('og:image:url', details.image);
   setMetaProperty('og:image:secure_url', details.image);
-  setMetaProperty('og:image:type', details.post ? 'image/jpeg' : 'image/png');
+  setMetaProperty('og:image:type', 'image/jpeg');
   setMetaProperty('og:image:width', details.imageWidth);
   setMetaProperty('og:image:height', details.imageHeight);
   setMetaProperty('og:image:alt', details.imageAlt);

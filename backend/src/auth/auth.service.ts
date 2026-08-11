@@ -16,6 +16,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { PrismaService } from '../database/prisma.service';
 import { TransactionalMailService } from '../mail/transactional-mail.service';
 import { authCookieNames, authCookieOptions } from './auth.cookies';
+import { TurnstileService } from './turnstile.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly mail: TransactionalMailService,
+    private readonly turnstile: TurnstileService,
   ) {}
 
   issueLoginCsrf(response: Response) {
@@ -36,7 +38,12 @@ export class AuthService {
     return token;
   }
 
-  async requestOtp(email: string, purpose: OtpPurpose, request: Request) {
+  async requestOtp(email: string, purpose: OtpPurpose, turnstileToken: string, request: Request) {
+    await this.turnstile.assertValid(
+      turnstileToken,
+      request,
+      purpose.toLowerCase() as 'login' | 'signup',
+    );
     const normalized = this.normalizeEmail(email);
     const now = new Date();
     const ttlMinutes = this.numberConfig('OTP_TTL_MINUTES', 10, 5, 10);
@@ -68,14 +75,21 @@ export class AuthService {
       );
 
     const challengeId = uuidv7();
+    const requestId = uuidv7();
+    const requestToken = randomBytes(32).toString('base64url');
     const code = String(randomInt(100000, 1000000));
     await this.prisma.otpChallenge.create({
       data: {
         id: challengeId,
+        requestId,
+        tokenHash: this.sha256(requestToken),
         emailNormalized: normalized,
         purpose,
         codeHash: this.otpHash(challengeId, code),
         requestIpHash,
+        fingerprintHash: this.hashSensitive(
+          String(request.headers['user-agent'] || 'unknown').slice(0, 500),
+        ),
         expiresAt: new Date(now.getTime() + ttlMinutes * 60 * 1000),
       },
     });
@@ -86,16 +100,25 @@ export class AuthService {
       throw error;
     }
     return {
-      challengeId,
+      requestId,
+      requestToken,
       expiresInSeconds: ttlMinutes * 60,
       destination: this.maskEmail(normalized),
     };
   }
 
-  async verifyOtp(challengeId: string, code: string, request: Request, response: Response) {
-    const challenge = await this.prisma.otpChallenge.findUnique({ where: { id: challengeId } });
+  async verifyOtp(
+    requestId: string,
+    requestToken: string,
+    code: string,
+    request: Request,
+    response: Response,
+  ) {
+    const challenge = await this.prisma.otpChallenge.findUnique({ where: { requestId } });
     const maxAttempts = this.numberConfig('OTP_MAX_ATTEMPTS', 5, 3, 10);
     if (!challenge || challenge.consumedAt || challenge.expiresAt <= new Date())
+      throw new UnauthorizedException('code is invalid or expired');
+    if (!this.safeEqual(challenge.tokenHash, this.sha256(requestToken)))
       throw new UnauthorizedException('code is invalid or expired');
     if (challenge.attempts >= maxAttempts)
       throw new HttpException(
@@ -110,20 +133,24 @@ export class AuthService {
       throw new UnauthorizedException('code is invalid or expired');
     }
 
+    const existingAccount = await this.prisma.user.findUnique({
+      where: { emailNormalized: challenge.emailNormalized },
+    });
+    if (challenge.purpose === OtpPurpose.LOGIN && !existingAccount)
+      throw new UnauthorizedException('no account found; create an account first');
+    if (challenge.purpose === OtpPurpose.SIGNUP && existingAccount)
+      throw new ConflictException('an account already exists; sign in instead');
+
     const user = await this.prisma.$transaction(async (database) => {
       const consumed = await database.otpChallenge.updateMany({
         where: { id: challenge.id, consumedAt: null },
-        data: { consumedAt: new Date() },
+        data: { consumedAt: new Date(), verified: true },
       });
       if (consumed.count !== 1) throw new UnauthorizedException('code has already been used');
 
       let account = await database.user.findUnique({
         where: { emailNormalized: challenge.emailNormalized },
       });
-      if (challenge.purpose === OtpPurpose.LOGIN && !account)
-        throw new UnauthorizedException('no account found; create an account first');
-      if (challenge.purpose === OtpPurpose.SIGNUP && account)
-        throw new ConflictException('an account already exists; sign in instead');
       if (!account) {
         account = await database.user.create({
           data: {
@@ -161,7 +188,18 @@ export class AuthService {
     return this.finishLogin(user, request, response);
   }
 
-  async googleLogin(credential: string, request: Request, response: Response) {
+  async googleLogin(
+    credential: string,
+    purpose: OtpPurpose,
+    turnstileToken: string,
+    request: Request,
+    response: Response,
+  ) {
+    await this.turnstile.assertValid(
+      turnstileToken,
+      request,
+      purpose.toLowerCase() as 'login' | 'signup',
+    );
     const clientId = this.config.get<string>('GOOGLE_CLIENT_ID');
     if (!clientId) throw new ServiceUnavailableException('Google sign-in is not configured');
     const ticket = await this.google.verifyIdToken({ idToken: credential, audience: clientId });
@@ -174,11 +212,17 @@ export class AuthService {
       where: { provider_providerSubject: { provider: 'GOOGLE', providerSubject: payload.sub } },
       include: { user: true },
     });
+    if (purpose === OtpPurpose.SIGNUP && existingIdentity)
+      throw new ConflictException('an account already exists; sign in instead');
     let user = existingIdentity?.user;
     if (!user) {
       const existingEmail = await this.prisma.user.findUnique({
         where: { emailNormalized: normalized },
       });
+      if (purpose === OtpPurpose.LOGIN && !existingEmail)
+        throw new UnauthorizedException('no account found; create an account first');
+      if (purpose === OtpPurpose.SIGNUP && existingEmail)
+        throw new ConflictException('an account already exists; sign in instead');
       if (existingEmail && !normalized.endsWith('@gmail.com') && !payload.hd)
         throw new ConflictException(
           'sign in with your email code before connecting this Google account',
@@ -264,6 +308,19 @@ export class AuthService {
       this.prisma.user.update({
         where: { id: user.id },
         data: { lastLoginAt: now, lastSeenAt: now },
+      }),
+      this.prisma.activityLog.create({
+        data: {
+          id: uuidv7(),
+          actorUserId: user.id,
+          subjectUserId: user.id,
+          action: 'LOGIN_SUCCESS',
+          entityType: 'User',
+          entityId: user.id,
+          entityName: user.email,
+          description: 'User signed in and a server-side session was created.',
+          metadata: { providerCountedAtLogin: true },
+        },
       }),
     ]);
     const names = authCookieNames(this.config);

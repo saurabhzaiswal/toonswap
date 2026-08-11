@@ -123,8 +123,8 @@ model User {
   consentRecords         ConsentRecord[]
   selfInsertAssets       SelfInsertAsset[]
   usagePolicyOverride    UsagePolicyOverride?
-  adminActionsPerformed  AdminAuditLog[]      @relation("AdminActor")
-  adminActionsReceived   AdminAuditLog[]      @relation("AdminTarget")
+  activityPerformed      ActivityLog[]        @relation("ActivityActor")
+  activityReceived       ActivityLog[]        @relation("ActivitySubject")
 
   @@index([status, lastSeenAt(sort: Desc)])
   @@index([role, status, createdAt(sort: Desc)])
@@ -166,15 +166,22 @@ model AuthSession {
 
 model OtpChallenge {
   id              String     @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  tokenHash       String     @unique @db.VarChar(64)
+  requestId       String     @unique @db.Uuid
   emailNormalized String     @db.VarChar(320)
   purpose         OtpPurpose
   codeHash        String     @db.VarChar(64)
   requestIpHash   String?    @db.VarChar(64)
+  fingerprintHash String?    @db.VarChar(64)
   attempts        Int        @default(0)
   expiresAt       DateTime
+  verified        Boolean    @default(false)
   consumedAt      DateTime?
   createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
+  @@unique([codeHash, tokenHash, requestId])
+  @@index([emailNormalized, verified, createdAt(sort: Desc)])
   @@index([emailNormalized, createdAt(sort: Desc)])
   @@index([requestIpHash, createdAt(sort: Desc)])
   @@index([expiresAt, consumedAt])
@@ -195,19 +202,26 @@ model UsagePolicyOverride {
   @@index([unlimited, updatedAt(sort: Desc)])
 }
 
-model AdminAuditLog {
-  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  actorUserId  String?  @db.Uuid
-  targetUserId String?  @db.Uuid
-  action       String   @db.VarChar(80)
-  metadata     Json?
-  createdAt    DateTime @default(now())
-  actor        User?    @relation("AdminActor", fields: [actorUserId], references: [id], onDelete: SetNull)
-  target       User?    @relation("AdminTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+model ActivityLog {
+  id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  actorUserId   String?   @db.Uuid
+  subjectUserId String?   @db.Uuid
+  action        String    @db.VarChar(80)
+  entityType    String?   @db.VarChar(80)
+  entityId      String?   @db.VarChar(160)
+  entityName    String?   @db.VarChar(200)
+  description   String?   @db.VarChar(500)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? @db.Timestamp(0)
+  actor         User?     @relation("ActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  subject       User?     @relation("ActivitySubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
 
   @@index([actorUserId, createdAt(sort: Desc)])
-  @@index([targetUserId, createdAt(sort: Desc)])
+  @@index([subjectUserId, createdAt(sort: Desc)])
   @@index([action, createdAt(sort: Desc)])
+  @@index([entityType, entityId, createdAt(sort: Desc)])
 }
 
 model MemeJob {

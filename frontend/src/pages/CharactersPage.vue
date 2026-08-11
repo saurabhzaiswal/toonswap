@@ -104,7 +104,7 @@ function addToCast(character) {
   <PlatformPageShell
     eyebrow="Original character universe"
     title="Meet characters you have never seen before."
-    description="Start with 24 art-ready ToonSwap originals across twelve worlds, then explore 216 structured character blueprints—or design someone completely your own."
+    description="Start with 24 art-ready ToonSwap originals across twelve worlds, then explore 216 structured character blueprints - or design someone completely your own."
     stat="216 originals"
     status="Original IP only · 24 illustrated · 192 production blueprints"
   >
@@ -146,7 +146,7 @@ function addToCast(character) {
           <h2>Faces first. Details when you need them.</h2>
           <p>
             Every illustrated character has a distinct world, role, personality, and movement
-            language. The remaining blueprints are the scale-up path—not fake finished assets.
+            language. The remaining blueprints are the scale-up path - not fake finished assets.
           </p>
         </div>
         <UiSegmented
@@ -238,7 +238,7 @@ function addToCast(character) {
         <h2>Build somebody only your story could invent.</h2>
         <p>
           Describe what makes them emotionally memorable. ToonSwap uses world rules, silhouette,
-          movement, relationships, and props—not copied cartoon names or lookalikes.
+          movement, relationships, and props - not copied cartoon names or lookalikes.
         </p>
         <div class="builder-rule">
           <span>✓</span> New silhouette <span>✓</span> New story role <span>✓</span> New movement

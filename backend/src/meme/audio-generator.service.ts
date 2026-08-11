@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 // Generic, original voice presets. Each voiceId points to a voice YOU design
-// and register in ElevenLabs (Voice Design / Voice Library) — never a clone
+// and register in ElevenLabs (Voice Design / Voice Library) - never a clone
 // of a real actor or a copyrighted character's exact voice performance.
 export const VOICE_PRESETS: Record<string, { voiceId: string; label: string }> = {
   'bhojpuri-comedy-uncle': {

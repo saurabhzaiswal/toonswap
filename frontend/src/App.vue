@@ -141,7 +141,7 @@ function chooseVoice(voice) {
           </h1>
           <p class="hero-lede">
             Turn one selfie into a share-ready cartoon moment with original characters and
-            culturally directed comedy voices—without copying anyone else's identity.
+            culturally directed comedy voices - without copying anyone else's identity.
           </p>
           <div class="hero-actions">
             <AppButton variant="primary" arrow @click="jumpToStudio">Create my toon</AppButton>
@@ -205,7 +205,7 @@ function chooseVoice(voice) {
           <h3>Sign in before you upload a face, voice, or story.</h3>
           <p>
             We keep creation tools behind an account so your projects, consent records, uploads, and
-            usage limits stay tied to you—not to an anonymous browser session.
+            usage limits stay tied to you - not to an anonymous browser session.
           </p>
           <div>
             <AppButton to="/signup" arrow>Create free account</AppButton
@@ -320,7 +320,7 @@ function chooseVoice(voice) {
             <h2 id="voices-title">Comedy has an accent.<br /><span>We celebrate it.</span></h2>
           </div>
           <p>
-            Built around rhythm, warmth, and local expression—not impressions of real people. Four
+            Built around rhythm, warmth, and local expression - not impressions of real people. Four
             original profiles are live now; a global native-led library is the roadmap.
           </p>
         </div>

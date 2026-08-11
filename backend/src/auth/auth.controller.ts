@@ -7,12 +7,14 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { GoogleCredentialDto, RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
 import { LoginCsrfGuard } from './guards/login-csrf.guard';
+import { TurnstileService } from './turnstile.service';
 
 @Controller('api/auth')
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly turnstile: TurnstileService,
   ) {}
 
   @Public()
@@ -24,6 +26,7 @@ export class AuthController {
         this.config.get<string>('SMTP_HOST') && this.config.get<string>('MAIL_FROM'),
       ),
       googleClientId: this.config.get<string>('GOOGLE_CLIENT_ID') || null,
+      turnstile: this.turnstile.configPayload(),
       passkeys: 'roadmap',
     };
   }
@@ -32,7 +35,7 @@ export class AuthController {
   @UseGuards(LoginCsrfGuard)
   @Post('otp/request')
   requestOtp(@Body() body: RequestOtpDto, @Req() request: Request) {
-    return this.auth.requestOtp(body.email, body.purpose, request);
+    return this.auth.requestOtp(body.email, body.purpose, body.turnstileToken, request);
   }
 
   @Public()
@@ -43,7 +46,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.auth.verifyOtp(body.challengeId, body.code, request, response);
+    return this.auth.verifyOtp(body.requestId, body.requestToken, body.code, request, response);
   }
 
   @Public()
@@ -54,7 +57,13 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.auth.googleLogin(body.credential, request, response);
+    return this.auth.googleLogin(
+      body.credential,
+      body.purpose,
+      body.turnstileToken,
+      request,
+      response,
+    );
   }
 
   @Get('session')

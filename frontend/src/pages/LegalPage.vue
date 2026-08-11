@@ -23,6 +23,7 @@ const documents = {
           'Voice recordings, typed scripts, story prompts, character briefs, dialogue, and scene instructions.',
           'Generated previews, provider outputs, processing status, and error details.',
           'Basic traffic and device information collected through Vercel Web Analytics when enabled.',
+          'Cloudflare Turnstile verification data used to distinguish legitimate sign-in attempts from automated abuse.',
         ],
       ],
       [
@@ -38,6 +39,7 @@ const documents = {
         '3. Processors and transfers',
         [
           'The current architecture may send necessary inputs to Replicate for visual processing, ElevenLabs for original voice generation or consented speech conversion, S3-compatible storage such as Cloudflare R2, hosting providers, PostgreSQL, and Redis.',
+          'Cloudflare processes limited request and browser signals for Turnstile verification on sign-in and registration forms.',
           'Provider production terms, data-use settings, retention, training settings, subprocessors, and cross-border transfer safeguards must be reviewed and documented before launch.',
           'Do not include secrets, financial records, medical information, identity documents, or media you are not authorised to process.',
         ],
@@ -250,7 +252,7 @@ const document = computed(() => documents[props.documentKey] || documents.commun
             >{{ section[0] }}</a
           >
           <div>
-            <b>Effective date</b><span>Not yet effective — draft</span><b>Last updated</b
+            <b>Effective date</b><span>Not yet effective - draft</span><b>Last updated</b
             ><span>11 August 2026</span>
           </div>
         </nav>

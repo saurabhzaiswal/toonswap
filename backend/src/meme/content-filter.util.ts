@@ -1,5 +1,5 @@
 // Lightweight, fast pre-filter for user-submitted TTS scripts.
-// This is NOT a substitute for a real moderation pipeline — it's a cheap
+// This is NOT a substitute for a real moderation pipeline - it's a cheap
 // first line of defense to block the most obvious abusive/defamatory
 // submissions before they hit the TTS API. Pair this with a proper
 // moderation API (e.g. OpenAI moderation endpoint) before scaling up.
@@ -9,7 +9,7 @@ const ABUSIVE_PATTERNS: RegExp[] = [
   // extend with a maintained profanity list per target language
 ];
 
-// Block attempts to name real public figures/celebrities explicitly —
+// Block attempts to name real public figures/celebrities explicitly  -
 // keeps voices squarely in "generic accent" territory, not impersonation.
 const REAL_PERSON_HINT_PATTERNS: RegExp[] = [
   /\b(manoj tiwari|khesari lal|pawan singh|modi|rahul gandhi)\b/i,
@@ -40,7 +40,7 @@ export function checkScriptText(text: string): ContentCheckResult {
     if (pattern.test(normalized)) {
       return {
         allowed: false,
-        reason: 'Please avoid naming real public figures — use generic character voices instead',
+        reason: 'Please avoid naming real public figures - use generic character voices instead',
       };
     }
   }

@@ -2,25 +2,25 @@
 
 > ToonSwap is an account-protected, original-character cartoon story and video-planning application. The current product is a production-oriented foundation; it does not claim that every generative provider or all 200+ planned languages are live.
 
-Canonical site: https://toonswap.vercel.app/
-Sitemap: https://toonswap.vercel.app/sitemap.xml
+Canonical site: https://toonswap-kappa.vercel.app/
+Sitemap: https://toonswap-kappa.vercel.app/sitemap.xml
 
 ## Public pages
 
-- Product home: https://toonswap.vercel.app/
-- Product and production roadmap: https://toonswap.vercel.app/roadmap
-- Original storytelling guides: https://toonswap.vercel.app/blog
-- Privacy: https://toonswap.vercel.app/privacy
-- Terms: https://toonswap.vercel.app/terms
-- Community guidelines: https://toonswap.vercel.app/community-guidelines
+- Product home: https://toonswap-kappa.vercel.app/
+- Product and production roadmap: https://toonswap-kappa.vercel.app/roadmap
+- Original storytelling guides: https://toonswap-kappa.vercel.app/blog
+- Privacy: https://toonswap-kappa.vercel.app/privacy
+- Terms: https://toonswap-kappa.vercel.app/terms
+- Community guidelines: https://toonswap-kappa.vercel.app/community-guidelines
 
 ## Protected creator workspace
 
-- Account creation: https://toonswap.vercel.app/signup
-- Sign in: https://toonswap.vercel.app/login
-- 216 original character records: https://toonswap.vercel.app/characters
-- Visual voice-direction library: https://toonswap.vercel.app/voices
-- Six-step scene Story Studio: https://toonswap.vercel.app/story-studio
+- Account creation: https://toonswap-kappa.vercel.app/signup
+- Sign in: https://toonswap-kappa.vercel.app/login
+- 216 original character records: https://toonswap-kappa.vercel.app/characters
+- Visual voice-direction library: https://toonswap-kappa.vercel.app/voices
+- Six-step scene Story Studio: https://toonswap-kappa.vercel.app/story-studio
 - Creator profiles, media uploads, projects, and generation require authentication.
 - Administration is role protected and excluded from indexing.
 

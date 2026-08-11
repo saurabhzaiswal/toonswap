@@ -6,6 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { AdminService } from './admin.service';
 import {
   AdminJobQueryDto,
+  AdminActivityQueryDto,
   AdminUserQueryDto,
   UpdateUsagePolicyDto,
   UpdateUserRoleDto,
@@ -30,6 +31,11 @@ export class AdminController {
   @Get('jobs')
   jobs(@Query() query: AdminJobQueryDto) {
     return this.admin.jobs(query);
+  }
+
+  @Get('activity')
+  activity(@Query() query: AdminActivityQueryDto) {
+    return this.admin.activity(query);
   }
 
   @Patch('users/:userId/status')

@@ -6,9 +6,10 @@ planning, generation quotas, and a role-protected operations dashboard.
 
 ## Stack
 - **Backend:** NestJS + Prisma (Postgres) + BullMQ/Redis + Replicate SDK + ElevenLabs API + fluent-ffmpeg
-- **Frontend:** Vue 3 (Composition API) + Pinia + Tailwind CSS + Vite
+- **Frontend:** Vue 3 (Composition API) + Pinia actions + Axios + Tailwind CSS + Vite
 - **Identity:** email OTP and optional Google sign-in, opaque httpOnly sessions,
-  CSRF protection, USER/ADMIN RBAC, and indexed account ownership
+  CSRF protection, mandatory Cloudflare Turnstile, USER/ADMIN RBAC, and indexed
+  account ownership/activity logs
 - **Database IDs:** PostgreSQL UUIDv7 on every model via
   `@default(dbgenerated("uuidv7()")) @db.Uuid`
 
@@ -20,7 +21,7 @@ planning, generation quotas, and a role-protected operations dashboard.
 2. Train/register the corresponding ElevenLabs voice models and put their model IDs
    in the same map.
 3. Swap the placeholder Replicate model string in `meme.processor.ts`
-   (`FACE_SWAP_MODEL`) for whichever face-swap model you land on after testing —
+   (`FACE_SWAP_MODEL`) for whichever face-swap model you land on after testing.
    check current model versions on replicate.com before going live.
 
 ## Backend setup
@@ -64,15 +65,15 @@ On top of the character face-swap, text input now routes through
 
 1. **Never clone a real actor/celebrity's voice.** Design your own voices in
    ElevenLabs Voice Design/Library and fill in `VOICE_PRESETS` with your own
-   voice IDs — the placeholders in the file are not real IDs.
+   voice IDs - the placeholders in the file are not real IDs.
 2. **`content-filter.util.ts` blocks obvious abuse and real-person names**
-   before a script ever reaches the TTS API. This is a basic first pass —
+   before a script ever reaches the TTS API. This is a basic first pass.
    swap in a real moderation API (OpenAI moderation endpoint, Perspective
    API, etc.) before you launch publicly, especially since scripts are
    user-generated and could turn defamatory.
 
 ## Monetization note
-Keep the free/watermarked-preview + paid-download model — it's the same structure
+Keep the free/watermarked-preview + paid-download model - it's the same structure
 you had planned, just applied to characters you own. `MemeJob.watermarked` in the
 Prisma schema already tracks this per-job so you can flip it after payment
 confirmation before re-serving the final render.

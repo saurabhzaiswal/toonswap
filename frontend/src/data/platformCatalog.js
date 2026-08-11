@@ -490,7 +490,7 @@ const blogPostDrafts = [
     sections: [
       [
         'Start with a human truth, not a reference',
-        'Choose a relatable tension—sibling rivalry, an invention gone wrong, a village rumour, first-day nerves—and build outward. A character becomes original through their specific wants, flaws, relationships, silhouette, movement, and world rules.',
+        'Choose a relatable tension - sibling rivalry, an invention gone wrong, a village rumour, first-day nerves - and build outward. A character becomes original through their specific wants, flaws, relationships, silhouette, movement, and world rules.',
       ],
       [
         'Design a movement signature',
@@ -498,7 +498,7 @@ const blogPostDrafts = [
       ],
       [
         'Run a distance test',
-        'Remove the name and colour. If viewers still identify a protected character or franchise, the design is too close. Redesign the silhouette, role, relationships, setting, powers, props, and performance together—not just one surface detail.',
+        'Remove the name and colour. If viewers still identify a protected character or franchise, the design is too close. Redesign the silhouette, role, relationships, setting, powers, props, and performance together - not just one surface detail.',
       ],
     ],
   },
@@ -661,7 +661,7 @@ const blogArticleDetails = {
       'Redesign multiple structural traits whenever one famous identity dominates.',
     ],
     takeaway:
-      'Borrow broad creative principles—clear silhouettes, readable emotion, rhythmic comedy, and warm relationships—but make every identity-bearing choice originate from your own story problem and world rules.',
+      'Borrow broad creative principles - clear silhouettes, readable emotion, rhythmic comedy, and warm relationships - but make every identity-bearing choice originate from your own story problem and world rules.',
   },
   'directing-comedy-across-languages': {
     readTime: '10 min read',

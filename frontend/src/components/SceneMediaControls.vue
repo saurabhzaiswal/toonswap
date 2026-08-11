@@ -119,7 +119,7 @@ const transitionOptions = [
           @change="emit('change')"
         />
         <p class="safe-note">
-          Only ToonSwap-owned or commercially licensed tracks belong here—no copied songs or
+          Only ToonSwap-owned or commercially licensed tracks belong here - no copied songs or
           user-uploaded copyrighted music.
         </p>
       </div>

@@ -2,6 +2,73 @@
 
 Updated: 11 August 2026
 
+## Branded social preview and production SEO correction
+
+- Corrected the canonical production origin to `https://toonswap-kappa.vercel.app/`
+  across route metadata, Open Graph, Twitter cards, JSON-LD, the XML sitemap,
+  robots, llms guidance, environment examples, and deployment documentation.
+- Added `frontend/public/og-social.jpg`, a branded 1200 x 630 social preview
+  containing the ToonSwap smile logo, wordmark, three original characters, and
+  the main product message. The final file is 196,181 bytes, safely below the
+  requested 300 KB ceiling.
+- Added complete image metadata including the public URL, secure URL, JPEG MIME
+  type, exact dimensions, and accessible alt text. Route-specific SEO and static
+  prerendering now use the same production origin and fallback preview.
+- Removed the prohibited long dash character from tracked project copy and
+  documentation.
+
+## Latest session, Turnstile, Axios, and audit-log hardening
+
+- Kept ToonSwap's current B2C authorization model intentionally small: `UserRole`
+  remains `USER | ADMIN`. The proposed `Client`, `Role`, `Permission`, and
+  `RolePermission` tenant tables were not added because the product does not yet
+  have client workspaces or custom roles. This avoids carrying a fake multi-tenant
+  model into the future SaaS migration.
+- Adapted the useful OTP proposal into `OtpChallenge`: UUIDv7 request IDs, hashed
+  one-time codes, hashed public request tokens, optional hashed fingerprint/network
+  signals, expiry, verification/consumption state, attempt limits, and indexed
+  request-rate checks. Neither the code nor bearer-style request token is stored
+  in plaintext.
+- Replaced the admin-only audit table with a general indexed `ActivityLog` that can
+  record an optional actor/subject, action, entity type/id/name, description,
+  metadata, timestamps, and soft-deletion time. Login, generation, role, block,
+  and quota events are recorded and searchable from a new admin Activity tab.
+- Added mandatory Cloudflare Turnstile verification to OTP requests and Google
+  sign-in/sign-up. The Vue widget uses explicit SPA rendering; Nest validates every
+  token with Siteverify, expected action, optional hostname, remote IP, timeout,
+  and idempotency key. Missing server credentials fail closed.
+- Axios is now the sole frontend backend-API client. Auth, profile, admin,
+  generation, and self-insert requests live in Pinia actions. The central response
+  interceptor clears local auth state and redirects expired sessions to the public
+  landing page (`/`), never to a private user home.
+- Rebuilt sign-in/sign-up as a responsive, animated three-step experience with
+  clear account-mode tabs, human-check state, email/OTP feedback, locked Google
+  access until verification, mobile-safe layout, and route-level `noindex` SEO.
+- Added honest content deterrence for non-admin visual assets: media-only
+  right-click/drag prevention and a clear notification. Text selection and normal
+  page interaction remain available. DevTools, F12, Inspect, OS screenshots, and
+  cameras cannot be reliably blocked by a website, so no deceptive detection claim
+  was added. Real protection remains private R2 objects, short-lived signed upload/
+  provider URLs, owner-checked streaming, quotas, watermark state, and disabled
+  production source maps.
+- Tightened the existing API boundary with an exact credentialed CORS allowlist,
+  mandatory production origin configuration, explicit methods/CSRF headers,
+  preflight caching, Helmet security headers, secure-cookie production defaults,
+  and semantic 403 responses for bad CSRF tokens. Authenticated CSRF checks remain
+  bound to the active database session; public authentication has its own
+  login-CSRF token and no broad unsafe-route bypass list.
+- Replaced the dark split authentication screen with a lighter editorial creator
+  experience: focused email/OTP forms, clearer security state, responsive tabs,
+  real illustrated originals from the character atlas, playful story/voice notes,
+  compact product context, and a single-column mobile layout.
+
+### Latest verification
+
+- Prisma format, schema validation, and Prisma Client generation: **pass**.
+- Frontend Vite production build and backend Nest production build: **pass**.
+- Visual browser QA could not run because this session exposed no in-app/Chrome
+  browser backend; compilation and static responsive checks passed.
+
 ## V8 authentication, RBAC, admin, and UUIDv7 data model
 
 - Added passwordless email OTP and optional Google Identity Services sign-in.
@@ -31,7 +98,7 @@ Updated: 11 August 2026
 ## V7 route SEO and full responsive polish
 
 - Added route-aware titles, descriptions, canonicals, Open Graph/Twitter cards, index directives, and working JSON-LD graphs for every public URL. The schemas cover Organization, WebSite, WebPage/CollectionPage, BreadcrumbList, SoftwareApplication, character/voice ItemLists, the six-step HowTo workflow, Blog, and each BlogPosting without inventing reviews, prices, or unsupported product claims.
-- The production build now pre-renders SEO head content into 15 route-specific HTML entries. Vercel serves those entries on direct visits, while Vue still updates metadata during client navigation. The XML sitemap, robots policy, manifest, blog image sitemap entries, and legal/content routes use `https://toonswap.vercel.app` consistently.
+- The production build now pre-renders SEO head content into 15 route-specific HTML entries. Vercel serves those entries on direct visits, while Vue still updates metadata during client navigation. The XML sitemap, robots policy, manifest, blog image sitemap entries, and legal/content routes use `https://toonswap-kappa.vercel.app` consistently.
 - Finished an all-route narrow-screen pass: mobile-safe page gutters and wrapping, smaller-screen character/voice/story grids, readable legal copy, compact blog/article cards, overflow-safe toasts and dropdowns, and less fragile decorative shadows/transforms.
 - Fixed the header's trailing two-line artifact by keeping the hamburger hidden at desktop sizes, aligned its breakpoint with the desktop navigation, and added an accessible animated slide/fade mobile menu with route-change closing and reduced-motion support.
 - Reworked Home's language/voice section into expressive, tactile persona cards with clearer selection, larger art, responsive stacking, and pressable starter prompts. Per the latest direction, `UiSelect` no longer shows or enables an embedded search field.
@@ -44,7 +111,7 @@ Updated: 11 August 2026
 - Generated public HTML entries: **15**; unique route titles: **15**; canonical URLs: **15**.
 - Parsed JSON-LD graphs without errors: **15/15**; XML sitemap URLs: **15**; web manifest JSON: **valid**.
 - Root frontend/backend production build: **pass**.
-- `og.png`: **363.4 KiB**, below the requested 400 KB ceiling.
+- `og-social.jpg`: **191.6 KiB**, below the current 300 KB ceiling.
 - Git-tracked `node_modules` files: **0**.
 
 ## V6 creator UI, mobile, formatting, and overflow update
@@ -54,7 +121,8 @@ Updated: 11 August 2026
 - Increased small Home/footer labels and strengthened route-level status treatments. Character and voice counts plus Story Studio browse/scene panels now use branded violet surfaces and clearer text hierarchy. Prettier normalized all frontend and backend source formatting.
 - Added Capacitor 8.5 with tracked Android and iOS projects, safe-area-aware web chrome, sync/open scripts, and native build documentation. Android/iOS icons and light/dark splash screens are generated from the same smile-mark SVG as the header/favicon. Copied web bundles and local native build/dependency output are ignored so Git tracks source rather than generated noise.
 - Added Prettier 3.9 to both packages. `npm run format` and `npm run format:check` work from the repository root or independently inside frontend/backend.
-- Reduced `frontend/public/og.png` from 2.23 MB to 363.4 KB and corrected its SEO metadata to the resulting 600 × 315 dimensions.
+- Replaced the legacy social preview with the current branded 1200 x 630 JPEG,
+  kept at 191.6 KiB for fast social-crawler delivery.
 - Upgraded Vite to 8.2 and the Vue plugin to 6.0. The frontend production bundle now builds with route splitting and the production dependency audit remains clean.
 
 ### V6 verification

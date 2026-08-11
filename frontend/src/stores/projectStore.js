@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import Uppy from '@uppy/core';
 import XHRUpload from '@uppy/xhr-upload';
-import { apiFetch } from '../lib/api';
+import { apiClient } from '../lib/api';
 
 const storageKey = 'toonswap-project-studio-v1';
 const mediaDefaults = {
@@ -264,10 +264,7 @@ export const useProjectStore = defineStore('projectStudio', {
           voiceType: this.selfInsert.voiceFile?.type,
           voiceSize: this.selfInsert.voiceFile?.size,
         };
-        const session = await apiFetch('/self-insert/upload-sessions', {
-          method: 'POST',
-          body: JSON.stringify(payload),
-        });
+        const session = (await apiClient.post('/self-insert/upload-sessions', payload)).data;
         this.selfInsert.assetId = session.assetId;
         const files = [];
         if (this.selfInsert.photoFile)
@@ -275,9 +272,8 @@ export const useProjectStore = defineStore('projectStudio', {
         if (this.selfInsert.voiceFile)
           files.push({ kind: 'voice', file: this.selfInsert.voiceFile });
         await uploadToPrivateSlots(files, session.slots);
-        const result = await apiFetch(`/self-insert/assets/${session.assetId}/finalize`, {
-          method: 'POST',
-        });
+        const result = (await apiClient.post(`/self-insert/assets/${session.assetId}/finalize`))
+          .data;
         this.selfInsert.status = String(result.status || 'DRAFT').toLowerCase();
         this.project.cast = this.project.cast.map((item) =>
           item.id === this.selfInsert.savedCharacterId
@@ -295,9 +291,7 @@ export const useProjectStore = defineStore('projectStudio', {
     },
     async clearSelfInsert() {
       if (this.selfInsert.assetId) {
-        await apiFetch(`/self-insert/assets/${this.selfInsert.assetId}`, {
-          method: 'DELETE',
-        }).catch(() => null);
+        await apiClient.delete(`/self-insert/assets/${this.selfInsert.assetId}`).catch(() => null);
       }
       if (this.selfInsert.photoPreviewUrl) URL.revokeObjectURL(this.selfInsert.photoPreviewUrl);
       const id = this.selfInsert.savedCharacterId;

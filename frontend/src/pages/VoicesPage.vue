@@ -110,7 +110,7 @@ function saveOwnVoiceBrief() {
   <PlatformPageShell
     eyebrow="Voice direction for every story"
     title="Hear the personality before you choose the language."
-    description="Browse visual performance personas, then pair the feeling with a native or shared language. The 200+ language goal is a reviewed roadmap—not a fake claim that every voice is live today."
+    description="Browse visual performance personas, then pair the feeling with a native or shared language. The 200+ language goal is a reviewed roadmap - not a fake claim that every voice is live today."
     accent="#48b9a7"
     stat="220 profiles"
     status="4 live directions · native review required before public language launch"

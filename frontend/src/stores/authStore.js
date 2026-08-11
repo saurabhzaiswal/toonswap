@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { apiFetch, loginFetch } from '../lib/api';
+import { apiClient } from '../lib/api';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -20,8 +20,8 @@ export const useAuthStore = defineStore('auth', {
     async bootstrap() {
       if (this.ready) return this.user;
       try {
-        this.config = await apiFetch('/auth/config');
-        const session = await apiFetch('/auth/session');
+        this.config = (await apiClient.get('/auth/config', { skipAuthRedirect: true })).data;
+        const session = (await apiClient.get('/auth/session', { skipAuthRedirect: true })).data;
         this.user = session.user;
         this.policy = session.policy;
       } catch (error) {
@@ -33,21 +33,27 @@ export const useAuthStore = defineStore('auth', {
       return this.user;
     },
     async refresh() {
-      const session = await apiFetch('/auth/session');
+      const session = (await apiClient.get('/auth/session')).data;
       this.user = session.user;
       this.policy = session.policy;
       return this.user;
     },
-    async requestOtp(email, purpose) {
+    async requestOtp(email, purpose, turnstileToken) {
       this.busy = true;
       this.error = '';
       try {
-        if (!this.config?.loginCsrf) this.config = await apiFetch('/auth/config');
-        this.challenge = await loginFetch(
-          '/auth/otp/request',
-          { email, purpose },
-          this.config.loginCsrf,
-        );
+        if (!this.config?.loginCsrf)
+          this.config = (await apiClient.get('/auth/config', { skipAuthRedirect: true })).data;
+        this.challenge = (
+          await apiClient.post(
+            '/auth/otp/request',
+            { email, purpose, turnstileToken },
+            {
+              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              skipAuthRedirect: true,
+            },
+          )
+        ).data;
         return this.challenge;
       } catch (error) {
         this.error = error.message;
@@ -60,11 +66,20 @@ export const useAuthStore = defineStore('auth', {
       this.busy = true;
       this.error = '';
       try {
-        const result = await loginFetch(
-          '/auth/otp/verify',
-          { challengeId: this.challenge.challengeId, code },
-          this.config.loginCsrf,
-        );
+        const result = (
+          await apiClient.post(
+            '/auth/otp/verify',
+            {
+              requestId: this.challenge.requestId,
+              requestToken: this.challenge.requestToken,
+              code,
+            },
+            {
+              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              skipAuthRedirect: true,
+            },
+          )
+        ).data;
         this.user = result.user;
         this.challenge = null;
         return result.user;
@@ -75,11 +90,20 @@ export const useAuthStore = defineStore('auth', {
         this.busy = false;
       }
     },
-    async googleLogin(credential) {
+    async googleLogin(credential, purpose, turnstileToken) {
       this.busy = true;
       this.error = '';
       try {
-        const result = await loginFetch('/auth/google', { credential }, this.config.loginCsrf);
+        const result = (
+          await apiClient.post(
+            '/auth/google',
+            { credential, purpose, turnstileToken },
+            {
+              headers: { 'x-toonswap-login-csrf': this.config.loginCsrf },
+              skipAuthRedirect: true,
+            },
+          )
+        ).data;
         this.user = result.user;
         return result.user;
       } catch (error) {
@@ -90,13 +114,20 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     async updateProfile(profile) {
-      const user = await apiFetch('/users/me', { method: 'PUT', body: JSON.stringify(profile) });
+      const user = (await apiClient.put('/users/me', profile)).data;
       this.user = user;
       return user;
     },
     async logout(all = false) {
-      await apiFetch(all ? '/auth/logout-all' : '/auth/logout', { method: 'POST' });
+      await apiClient.post(all ? '/auth/logout-all' : '/auth/logout');
       this.user = null;
+      this.policy = null;
+    },
+    clearExpiredSession() {
+      this.user = null;
+      this.policy = null;
+      this.challenge = null;
+      this.ready = true;
     },
   },
 });

@@ -74,7 +74,7 @@ export class MemeController {
       throw new BadRequestException('either a voice recording or scriptText is required');
     }
 
-    // Text-driven jobs go through a regional generic voice preset — validate
+    // Text-driven jobs go through a regional generic voice preset - validate
     // both the preset (never a real-person clone) and the script content.
     if (!voice) {
       const voiceStyle = body.voiceStyle;

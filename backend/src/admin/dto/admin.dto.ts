@@ -68,6 +68,29 @@ export class AdminJobQueryDto {
   pageSize = 20;
 }
 
+export class AdminActivityQueryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  action?: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page = 1;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(5)
+  @Max(100)
+  pageSize = 20;
+}
+
 export class UpdateUserStatusDto {
   @IsEnum(UserStatus)
   status!: UserStatus;

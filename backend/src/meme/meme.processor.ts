@@ -15,7 +15,7 @@ import { MEME_QUEUE_NAME } from './meme.service';
 // Maps our internal (original, non-infringing) character names to their
 // base template video + reference voice-model asset stored in our bucket.
 const TEMPLATE_ASSET_BASE_URL =
-  process.env.TEMPLATE_ASSET_BASE_URL || 'https://toonswap.vercel.app';
+  process.env.TEMPLATE_ASSET_BASE_URL || 'https://toonswap-kappa.vercel.app';
 const CHARACTER_TEMPLATES: Record<string, { templateVideoUrl: string; voiceModelId: string }> = {
   'chulbul-the-naughty-kid': {
     templateVideoUrl: `${TEMPLATE_ASSET_BASE_URL}/templates/chulbul_base.mp4`,

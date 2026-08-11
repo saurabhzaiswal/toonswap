@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { apiFetch } from '../lib/api';
+import { apiClient } from '../lib/api';
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLL_ATTEMPTS = 60;
 
@@ -70,7 +70,7 @@ export const useMemeStore = defineStore('meme', {
       }
 
       try {
-        const data = await apiFetch('/meme/generate', { method: 'POST', body: form });
+        const { data } = await apiClient.post('/meme/generate', form);
         this.jobId = data.jobId;
         this.status = data.status;
         await this.pollStatus();
@@ -85,7 +85,7 @@ export const useMemeStore = defineStore('meme', {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
 
         try {
-          const data = await apiFetch(`/meme/${this.jobId}/status`);
+          const { data } = await apiClient.get(`/meme/${this.jobId}/status`);
           this.status = data.status;
 
           if (data.status === 'DONE') {

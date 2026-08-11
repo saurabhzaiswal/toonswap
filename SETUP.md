@@ -81,6 +81,9 @@ SMTP_PASSWORD=<smtp-password>
 MAIL_FROM=ToonSwap <no-reply@example.com>
 GOOGLE_CLIENT_ID=
 BOOTSTRAP_ADMIN_EMAILS=your-verified-admin@example.com
+TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
+TURNSTILE_SECRET_KEY=<cloudflare-turnstile-secret-key>
+TURNSTILE_EXPECTED_HOSTNAME=localhost
 
 # Confirm these launch policies before allowing generation.
 MINIMUM_SELF_SERVE_AGE=
@@ -108,7 +111,7 @@ S3_BUCKET=toonswap-dev
 S3_PUBLIC_BASE_URL=https://<development-public-domain>
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
-TEMPLATE_ASSET_BASE_URL=https://toonswap.vercel.app
+TEMPLATE_ASSET_BASE_URL=https://toonswap-kappa.vercel.app
 ```
 
 Then create the Prisma client and local schema and start NestJS:
@@ -128,6 +131,43 @@ records are preserved under a blocked system owner during the auth migration.
 `BOOTSTRAP_ADMIN_EMAILS` applies only when a verified account is first created.
 After your administrator account exists, clear that variable and use the
 role-protected `/admin` dashboard for later role changes.
+
+Turnstile is mandatory for OTP requests and Google account access. Create a
+widget in Cloudflare, keep the secret only in the backend environment, and set
+`TURNSTILE_EXPECTED_HOSTNAME` to the exact deployed host. For local/automated
+testing, use Cloudflare's published dummy site/secret key pair rather than a
+production secret. The backend always calls Siteverify; client-side success alone
+is never treated as authentication proof. Tokens are short-lived and single-use,
+so the UI resets the widget after each authentication attempt.
+
+Authenticated browser state is an opaque server-side session referenced by an
+httpOnly cookie. Axios sends credentialed same-origin requests and a readable,
+separate CSRF value on unsafe methods. A central 401 interceptor clears Pinia auth
+state and returns the browser to `/`. Do not put identity/session tokens in
+`localStorage` or expose the session cookie to JavaScript.
+
+### CORS, CSRF, and API security headers
+
+`FRONTEND_ORIGIN` is an exact, comma-separated allowlist and is mandatory when
+`NODE_ENV=production`. Credentialed CORS accepts only configured browser origins,
+the supported HTTP methods, and ToonSwap's two CSRF headers. The Vercel deployment
+normally uses the checked-in same-origin `/api` reverse proxy, but the backend
+allowlist remains enforced for direct browser traffic. Add Capacitor origins
+explicitly only when the native API topology requires them.
+
+Authenticated unsafe requests use a session-bound double-submit design: the
+readable CSRF cookie must match the request header and its SHA-256 hash must also
+match the active database `AuthSession`. Public OTP/Google POST routes do not get
+a blanket CSRF exemption; they use a separate login-CSRF cookie/header and
+mandatory Turnstile. `csrf-csrf` is therefore not added: its reference setup
+expects Express `req.session`, while ToonSwap uses opaque database sessions and
+already performs the equivalent check with an additional server-side binding.
+
+Helmet supplies standard API security headers. In production, secure cookies are
+the default when `AUTH_COOKIE_SECURE` is blank; use `AUTH_COOKIE_SAME_SITE=lax`
+with the same-origin proxy, or configure `none` only with HTTPS and a deliberately
+cross-site frontend/API deployment. The session cookie is httpOnly; the separate
+CSRF cookie must remain readable by Axios.
 
 The API listens on `http://localhost:3000`. Short-form generation routes are
 under `/api/meme`; scalable story/catalog routes are under `/api/studio`.
@@ -321,10 +361,10 @@ publishing, confirm that `frontend/dist` contains route folders for characters,
 voices, Story Studio, roadmap, blog articles, and the three legal pages. After
 Vercel deploys, check these public files and representative routes:
 
-- `https://toonswap.vercel.app/robots.txt`
-- `https://toonswap.vercel.app/sitemap.xml`
-- `https://toonswap.vercel.app/characters`
-- `https://toonswap.vercel.app/blog/original-characters-without-copying`
+- `https://toonswap-kappa.vercel.app/robots.txt`
+- `https://toonswap-kappa.vercel.app/sitemap.xml`
+- `https://toonswap-kappa.vercel.app/characters`
+- `https://toonswap-kappa.vercel.app/blog/original-characters-without-copying`
 
 Submit the sitemap in Google Search Console after the first production deploy.
 Do not add fake ratings, prices, testimonials, or publication dates merely to
@@ -359,7 +399,7 @@ Direct browser PUTs still require an R2 CORS rule even though the URL is signed.
 ```json
 [
   {
-    "AllowedOrigins": ["https://toonswap.vercel.app"],
+    "AllowedOrigins": ["https://toonswap-kappa.vercel.app"],
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["Content-Type"],
     "ExposeHeaders": ["ETag"],

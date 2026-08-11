@@ -1,5 +1,6 @@
-const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+import axios from 'axios';
 
+const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 export const apiRoot = `${backendOrigin}/api`;
 
 function cookieValue(suffix) {
@@ -12,55 +13,44 @@ function cookieValue(suffix) {
   return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : '';
 }
 
-export async function apiFetch(path, options = {}) {
-  const method = (options.method || 'GET').toUpperCase();
-  const headers = new Headers(options.headers || {});
+export const apiClient = axios.create({
+  baseURL: apiRoot,
+  withCredentials: true,
+  timeout: 30_000,
+  headers: { Accept: 'application/json' },
+});
+
+apiClient.interceptors.request.use((config) => {
+  const method = (config.method || 'get').toUpperCase();
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
     const csrf = cookieValue('csrf');
-    if (csrf) headers.set('x-toonswap-csrf', csrf);
+    if (csrf) config.headers.set('x-toonswap-csrf', csrf);
   }
-  if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-  const response = await fetch(`${apiRoot}${path}`, {
-    ...options,
-    method,
-    headers,
-    credentials: 'include',
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const error = new Error(
-      Array.isArray(payload?.message)
-        ? payload.message.join('. ')
-        : payload?.message || 'Request failed',
-    );
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
-  }
-  return payload;
-}
+  return config;
+});
 
-export async function loginFetch(path, body, loginCsrf) {
-  const response = await fetch(`${apiRoot}${path}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-toonswap-login-csrf': loginCsrf,
-    },
-    body: JSON.stringify(body),
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const error = new Error(
-      Array.isArray(payload?.message)
-        ? payload.message.join('. ')
-        : payload?.message || 'Sign-in failed',
-    );
-    error.status = response.status;
-    throw error;
-  }
-  return payload;
-}
+let redirectingAfterExpiry = false;
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const payload = error.response?.data;
+    error.status = status;
+    error.payload = payload;
+    error.message = Array.isArray(payload?.message)
+      ? payload.message.join('. ')
+      : payload?.message || error.message || 'Request failed';
+
+    if (
+      status === 401 &&
+      !error.config?.skipAuthRedirect &&
+      typeof window !== 'undefined' &&
+      !redirectingAfterExpiry
+    ) {
+      redirectingAfterExpiry = true;
+      window.dispatchEvent(new CustomEvent('toonswap:session-expired'));
+      window.location.assign('/?session=expired');
+    }
+    return Promise.reject(error);
+  },
+);

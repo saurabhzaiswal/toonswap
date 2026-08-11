@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsString, IsUUID, Length, MaxLength } from 'class-validator';
 import { OtpPurpose } from '@prisma/client';
 
 export class RequestOtpDto {
@@ -7,12 +7,19 @@ export class RequestOtpDto {
 
   @IsEnum(OtpPurpose)
   purpose!: OtpPurpose;
+
+  @IsString()
+  @MaxLength(2048)
+  turnstileToken!: string;
 }
 
 export class VerifyOtpDto {
+  @IsUUID()
+  requestId!: string;
+
   @IsString()
-  @Length(20, 80)
-  challengeId!: string;
+  @Length(20, 120)
+  requestToken!: string;
 
   @IsString()
   @Length(6, 6)
@@ -23,4 +30,11 @@ export class GoogleCredentialDto {
   @IsString()
   @Length(100, 10000)
   credential!: string;
+
+  @IsEnum(OtpPurpose)
+  purpose!: OtpPurpose;
+
+  @IsString()
+  @MaxLength(2048)
+  turnstileToken!: string;
 }

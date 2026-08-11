@@ -9,6 +9,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { PrismaService } from '../database/prisma.service';
 import {
   AdminJobQueryDto,
+  AdminActivityQueryDto,
   AdminUserQueryDto,
   UpdateUsagePolicyDto,
   UpdateUserRoleDto,
@@ -161,6 +162,57 @@ export class AdminService {
     };
   }
 
+  async activity(query: AdminActivityQueryDto) {
+    const search = query.search?.trim();
+    const where: Prisma.ActivityLogWhereInput = {
+      deletedAt: null,
+      ...(query.action ? { action: query.action } : {}),
+      ...(search
+        ? {
+            OR: [
+              { action: { contains: search, mode: 'insensitive' } },
+              { entityName: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+              {
+                actor: { emailNormalized: { contains: search.toLowerCase(), mode: 'insensitive' } },
+              },
+            ],
+          }
+        : {}),
+    };
+    const skip = (query.page - 1) * query.pageSize;
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.activityLog.findMany({
+        where,
+        skip,
+        take: query.pageSize,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          action: true,
+          entityType: true,
+          entityId: true,
+          entityName: true,
+          description: true,
+          metadata: true,
+          createdAt: true,
+          actor: { select: { id: true, email: true, name: true } },
+          subject: { select: { id: true, email: true, name: true } },
+        },
+      }),
+      this.prisma.activityLog.count({ where }),
+    ]);
+    return {
+      items,
+      pagination: {
+        page: query.page,
+        pageSize: query.pageSize,
+        total,
+        pages: Math.max(1, Math.ceil(total / query.pageSize)),
+      },
+    };
+  }
+
   async updateStatus(actorUserId: string, targetUserId: string, input: UpdateUserStatusDto) {
     if (actorUserId === targetUserId)
       throw new ForbiddenException('administrators cannot block their own account');
@@ -183,12 +235,19 @@ export class AdminService {
           where: { userId: targetUserId, revokedAt: null },
           data: { revokedAt: now },
         });
-      await database.adminAuditLog.create({
+      await database.activityLog.create({
         data: {
           id: uuidv7(),
           actorUserId,
-          targetUserId,
+          subjectUserId: targetUserId,
           action: input.status === UserStatus.BLOCKED ? 'USER_BLOCKED' : 'USER_UNBLOCKED',
+          entityType: 'User',
+          entityId: targetUserId,
+          entityName: target.email,
+          description:
+            input.status === UserStatus.BLOCKED
+              ? 'Administrator blocked the account and revoked active sessions.'
+              : 'Administrator restored account access.',
           metadata: { previousStatus: target.status, reason: input.reason || null },
         },
       });
@@ -206,12 +265,16 @@ export class AdminService {
         where: { id: targetUserId },
         data: { role: input.role },
       });
-      await database.adminAuditLog.create({
+      await database.activityLog.create({
         data: {
           id: uuidv7(),
           actorUserId,
-          targetUserId,
+          subjectUserId: targetUserId,
           action: 'USER_ROLE_CHANGED',
+          entityType: 'User',
+          entityId: targetUserId,
+          entityName: target.email,
+          description: `Administrator changed the account role from ${target.role} to ${input.role}.`,
           metadata: { previousRole: target.role, nextRole: input.role },
         },
       });
@@ -221,7 +284,7 @@ export class AdminService {
   }
 
   async updateUsagePolicy(actorUserId: string, targetUserId: string, input: UpdateUsagePolicyDto) {
-    await this.target(targetUserId);
+    const target = await this.target(targetUserId);
     if (!input.unlimited && (input.generationLimit == null || input.windowDays == null))
       throw new BadRequestException(
         'a limit and window are required unless the account is unlimited',
@@ -246,12 +309,16 @@ export class AdminService {
           updatedByUserId: actorUserId,
         },
       });
-      await database.adminAuditLog.create({
+      await database.activityLog.create({
         data: {
           id: uuidv7(),
           actorUserId,
-          targetUserId,
+          subjectUserId: targetUserId,
           action: 'USAGE_POLICY_CHANGED',
+          entityType: 'UsagePolicyOverride',
+          entityId: updated.id,
+          entityName: target.email,
+          description: 'Administrator changed the account generation allowance.',
           metadata: {
             unlimited: input.unlimited,
             generationLimit: input.generationLimit || null,

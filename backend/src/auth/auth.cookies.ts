@@ -1,8 +1,16 @@
 import { ConfigService } from '@nestjs/config';
 import { CookieOptions } from 'express';
 
+function secureCookies(config: ConfigService) {
+  const configured = config.get<string>('AUTH_COOKIE_SECURE')?.trim().toLowerCase();
+  if (!configured) return config.get<string>('NODE_ENV') === 'production';
+  if (['1', 'true', 'yes', 'on'].includes(configured)) return true;
+  if (['0', 'false', 'no', 'off'].includes(configured)) return false;
+  return config.get<string>('NODE_ENV') === 'production';
+}
+
 export function authCookieNames(config: ConfigService) {
-  const secure = config.get<string>('AUTH_COOKIE_SECURE') === 'true';
+  const secure = secureCookies(config);
   const prefix = secure ? '__Host-' : '';
   return {
     session: `${prefix}toonswap_session`,
@@ -12,7 +20,7 @@ export function authCookieNames(config: ConfigService) {
 }
 
 export function authCookieOptions(config: ConfigService, httpOnly: boolean): CookieOptions {
-  const secure = config.get<string>('AUTH_COOKIE_SECURE') === 'true';
+  const secure = secureCookies(config);
   const configured = config.get<string>('AUTH_COOKIE_SAME_SITE', 'lax').toLowerCase();
   const sameSite = ['strict', 'lax', 'none'].includes(configured)
     ? (configured as 'strict' | 'lax' | 'none')

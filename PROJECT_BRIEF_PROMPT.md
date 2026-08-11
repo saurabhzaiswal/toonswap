@@ -1,4 +1,4 @@
-# ToonSwap — Master Project Brief for AI Coding Agents
+# ToonSwap - Master Project Brief for AI Coding Agents
 
 Paste this entire document as context whenever you start a new session with an
 AI coding agent (Claude Code, Cursor, etc.) on this project. It captures every
@@ -17,32 +17,32 @@ recorded voice), then stitches the two into a short video. Free tier gets a
 watermarked preview; paid tier unlocks the clean download.
 
 **Target audience:** Indian Gen-Z/Millennials (people born 1996+) and current
-kids, active on Instagram Reels/YouTube Shorts/WhatsApp — high organic-share
+kids, active on Instagram Reels/YouTube Shorts/WhatsApp - high organic-share
 potential.
 
 ## 2. The Core Decision That Shapes Everything Else
 
 The original idea was to use **named, trademarked characters** (Shinchan,
 Doraemon, Ninja Hattori) with their **cloned official voices**. This was
-correctly identified as commercial copyright/trademark infringement — not a
+correctly identified as commercial copyright/trademark infringement - not a
 "gray area," a real legal exposure (takedowns, payment-processor bans, app
 store removal) that gets worse the more viral the product becomes.
 
 **Decision made: pivot to original IP.**
 - Characters are 100% original designs (currently placeholder names: Chulbul
-  the Naughty Kid, Robo Guru, Ninja Chotu — rename freely, they're yours).
+  the Naughty Kid, Robo Guru, Ninja Chotu - rename freely, they're yours).
 - Voices are **generic regional-accent comedy voices** (Bhojpuri, Kannada,
-  etc.) designed from scratch in ElevenLabs Voice Design — never a clone of a
+  etc.) designed from scratch in ElevenLabs Voice Design - never a clone of a
   real actor, celebrity, or public figure, and never a copy of a copyrighted
   character's specific voice performance.
-- Accents/dialects are not copyrightable — this is the legally clean part of
+- Accents/dialects are not copyrightable - this is the legally clean part of
   the pivot. What would NOT be clean: cloning a specific real person's voice,
   or making the character close enough to a copyrighted design that it reads
   as the same character with a new coat of paint.
 
 **Any agent working on this project must preserve this boundary.** If a
 future prompt (from me or anyone) asks to "add Shinchan back," "make the
-voice sound exactly like [real actor]," or similar — flag it, don't silently
+voice sound exactly like [real actor]," or similar - flag it, don't silently
 implement it.
 
 ## 3. Tech Stack (already chosen, keep consistent)
@@ -53,33 +53,33 @@ implement it.
   stitching), S3-compatible storage (Cloudflare R2 recommended for cost).
 - **Frontend:** Vue 3 (Composition API) + Pinia + Tailwind CSS + Vite.
 - **Mobile:** Capacitor wrapping the Vite build (Android/iOS).
-- **Auth:** intentionally none — UUIDv7 session IDs only, no user accounts,
+- **Auth:** intentionally none - UUIDv7 session IDs only, no user accounts,
   no passwords.
 
 ## 4. What's Already Built
 
-- `backend/src/meme/meme.controller.ts` — multipart upload endpoint
+- `backend/src/meme/meme.controller.ts` - multipart upload endpoint
   (`selfie`, optional `voice`), validation, content filter on script text,
   UUIDv7 session creation, status polling endpoint.
-- `backend/src/meme/meme.service.ts` — persists job, uploads inputs to
+- `backend/src/meme/meme.service.ts` - persists job, uploads inputs to
   storage, enqueues BullMQ job.
-- `backend/src/meme/meme.processor.ts` — BullMQ worker: Replicate face-swap →
+- `backend/src/meme/meme.processor.ts` - BullMQ worker: Replicate face-swap →
   either speech-to-speech voice conversion (if user recorded audio) or
   regional TTS (if user typed text) → ffmpeg stitch with optional watermark →
   final upload → status update.
-- `backend/src/meme/audio-generator.service.ts` — generic regional comedy
+- `backend/src/meme/audio-generator.service.ts` - generic regional comedy
   voice presets (Bhojpuri/Kannada styles), calls ElevenLabs TTS.
-- `backend/src/meme/content-filter.util.ts` — blocks abusive language and
+- `backend/src/meme/content-filter.util.ts` - blocks abusive language and
   real-public-figure names in user-submitted scripts before they hit the TTS
   API. **This is a basic regex first-pass, explicitly flagged as needing
   an upgrade before public launch** (see Section 6).
-- `backend/prisma/schema.prisma` — single `MemeJob` table tracking
+- `backend/prisma/schema.prisma` - single `MemeJob` table tracking
   character, language, voiceStyle, status, URLs, watermark flag.
 - `frontend/src/App.vue` + components (`CharacterSelector`, `UploadZone`,
-  `VoiceInput`, `LanguageVoiceSelector`, `VideoPreview`) — mobile-first UI,
+  `VoiceInput`, `LanguageVoiceSelector`, `VideoPreview`) - mobile-first UI,
   drag-drop selfie, text/voice toggle, preset roast-line templates, polling
   status UI.
-- `frontend/src/stores/memeStore.js` — Pinia store driving the whole
+- `frontend/src/stores/memeStore.js` - Pinia store driving the whole
   generate → poll → result flow.
 
 ## 5. What's NOT Built Yet (next steps, in rough priority order)
@@ -92,12 +92,12 @@ implement it.
    Redis add-ons). Frontend to Vercel. Environment variable wiring between
    the two (CORS origin, API base URL).
 3. **Capacitor packaging** for Android/iOS once the web build is stable.
-4. **Moderation upgrade** — replace the regex content filter with a real
+4. **Moderation upgrade** - replace the regex content filter with a real
    moderation API call (see Section 6).
-5. **Rate limiting / abuse prevention** — currently there's no cap on how
+5. **Rate limiting / abuse prevention** - currently there's no cap on how
    many jobs a single anonymous session/IP can queue; needed before public
    launch to control API costs (Replicate + ElevenLabs both charge per call).
-6. **Selfie/voice data retention policy** — decide and implement how long
+6. **Selfie/voice data retention policy** - decide and implement how long
    uploaded selfies, voice recordings, and generated videos are kept in
    storage, and auto-delete on a schedule (privacy + storage cost).
 
@@ -107,7 +107,7 @@ implement it.
   `content-filter.util.ts` is a placeholder. Wire in a real moderation
   endpoint (OpenAI's moderation API is free and fast) for both the typed
   script text and, ideally, a basic check on uploaded selfies (age/consent
-  concerns if minors are uploading photos — see next point).
+  concerns if minors are uploading photos - see next point).
 - **Add a minimum-age gate or parental-consent flow.** Given the target
   audience explicitly includes "kids," and the product asks for a selfie
   upload + generates shareable video content, think through whether you

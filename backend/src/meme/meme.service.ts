@@ -38,18 +38,38 @@ export class MemeService {
       ? await this.storage.uploadBuffer(input.voice.buffer, input.voice.mimetype, 'voices')
       : null;
 
-    const job = await this.prisma.memeJob.create({
-      data: {
-        id: jobId,
-        userId: input.userId,
-        character: input.character,
-        language: input.language ?? 'hindi',
-        voiceStyle: input.voiceStyle ?? 'comedy-uncle',
-        selfieUrl,
-        voiceUrl,
-        scriptText: input.scriptText ?? null,
-        status: 'PENDING',
-      },
+    const job = await this.prisma.$transaction(async (database) => {
+      const created = await database.memeJob.create({
+        data: {
+          id: jobId,
+          userId: input.userId,
+          character: input.character,
+          language: input.language ?? 'hindi',
+          voiceStyle: input.voiceStyle ?? 'comedy-uncle',
+          selfieUrl,
+          voiceUrl,
+          scriptText: input.scriptText ?? null,
+          status: 'PENDING',
+        },
+      });
+      await database.activityLog.create({
+        data: {
+          id: uuidv7(),
+          actorUserId: input.userId,
+          subjectUserId: input.userId,
+          action: 'GENERATION_REQUESTED',
+          entityType: 'MemeJob',
+          entityId: created.id,
+          entityName: input.character,
+          description: 'User submitted a short-form cartoon generation job.',
+          metadata: {
+            language: created.language,
+            voiceInput: Boolean(input.voice),
+            watermarked: created.watermarked,
+          },
+        },
+      });
+      return created;
     });
 
     await this.memeQueue.add(

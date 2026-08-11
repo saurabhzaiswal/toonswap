@@ -15,7 +15,7 @@ Every provider prompt and uploaded reference should pass an IP/impersonation
 review before generation. Public-figure and protected-character requests should
 be rejected with an original alternative.
 
-## Phase 1 — Routed product foundation (implemented)
+## Phase 1 - Routed product foundation (implemented)
 
 - Vue Router navigation for Home, Characters, Voices, guided Story Studio,
   animated Roadmap, Blog, Privacy, Terms, and Community Guidelines.
@@ -34,7 +34,7 @@ be rejected with an original alternative.
   keyboard focus states, help text, and responsive layouts.
 - Product-policy drafts for privacy, terms, and community rules.
 
-## Phase 2 — Production data model and APIs (foundation implemented)
+## Phase 2 - Production data model and APIs (foundation implemented)
 
 The first scalable schema/API pass is implemented without expanding the single
 `MemeJob` into a catch-all:
@@ -57,7 +57,7 @@ capability endpoint. Provider rendering, catalog seeding, immutable scene/output
 version history, moderation, consent evidence, and cost approval remain the next
 backend phase.
 
-## Phase 3 — Safety, consent, and rights pipeline
+## Phase 3 - Safety, consent, and rights pipeline
 
 Before any provider call:
 
@@ -70,7 +70,7 @@ Before any provider call:
 7. Human review route for borderline cultural, child-safety, or rights cases.
 8. Reporting, appeals, rights-holder notices, and fast takedown operations.
 
-## Phase 4 — Native-led voice and language program
+## Phase 4 - Native-led voice and language program
 
 A language is “live” only after:
 
@@ -85,7 +85,7 @@ A language is “live” only after:
 Translation, dubbing, speech-to-speech, singing, and lip-sync should be separate
 capabilities. Copyrighted songs and lyrics require their own rights checks.
 
-## Phase 5 — Scene-based AI pipeline
+## Phase 5 - Scene-based AI pipeline
 
 1. Convert the story brief into structured beats.
 2. Lock character/style bibles and consent before shots.
@@ -98,7 +98,7 @@ capabilities. Copyrighted songs and lyrics require their own rights checks.
 9. Store immutable versions so “change voice only” or “change background only”
    can reuse approved work.
 
-## Phase 6 — Long-form rendering (up to 60 minutes)
+## Phase 6 - Long-form rendering (up to 60 minutes)
 
 - Never render a one-hour film as one provider job. Use resumable scene and shot
   queues with checkpoints.
@@ -110,7 +110,7 @@ capabilities. Copyrighted songs and lyrics require their own rights checks.
 - Save project manifests so an interrupted render can resume without duplicate
   charges.
 
-## Phase 7 — Privacy and retention
+## Phase 7 - Privacy and retention
 
 Define and implement before public access:
 
@@ -123,7 +123,7 @@ Define and implement before public access:
 - withdrawal of voice/face consent and prevention of future reuse;
 - incident response, audit logs, and a working privacy contact.
 
-## Phase 8 — Commerce and launch readiness
+## Phase 8 - Commerce and launch readiness
 
 - Razorpay order creation and signature-verified idempotent webhooks.
 - Clear licence per asset and output, pricing, taxes, refund policy, and day-pass

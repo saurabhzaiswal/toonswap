@@ -1,23 +1,23 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Uppy from '@uppy/core';
-import XHRUpload from '@uppy/xhr-upload';
 import SiteHeader from '../components/SiteHeader.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import UiCheckbox from '../components/ui/UiCheckbox.vue';
 import UiInput from '../components/ui/UiInput.vue';
-import { apiFetch, apiRoot } from '../lib/api';
+import { apiRoot } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useProfileStore } from '../stores/profileStore';
 
 const auth = useAuthStore();
+const profileStore = useProfileStore();
 const router = useRouter();
-const saving = ref(false);
-const message = ref('');
-const error = ref('');
+const saving = computed(() => profileStore.busy);
+const message = computed(() => profileStore.message);
+const error = computed(() => profileStore.error);
 const avatarInput = ref(null);
-const avatarVersion = ref(Date.now());
+const avatarVersion = computed(() => profileStore.avatarVersion);
 const form = reactive({
   name: '',
   dateOfBirth: '',
@@ -30,7 +30,7 @@ const form = reactive({
 });
 
 async function load() {
-  const profile = await apiFetch('/users/me');
+  const profile = await profileStore.load();
   Object.assign(form, {
     name: profile.name || '',
     dateOfBirth: profile.dateOfBirth?.slice(0, 10) || '',
@@ -41,64 +41,22 @@ async function load() {
     acceptTerms: Boolean(profile.profileComplete),
     acceptPrivacy: Boolean(profile.profileComplete),
   });
-  auth.user = profile;
 }
 
 async function save() {
-  saving.value = true;
-  error.value = '';
-  message.value = '';
-  try {
-    await auth.updateProfile({ ...form, countryCode: form.countryCode.toUpperCase() });
-    message.value =
-      auth.user.ageGateStatus === 'ELIGIBLE'
-        ? 'Profile saved. Your creator workspace is ready.'
-        : 'Profile saved. Creation remains locked until the required age policy or guardian flow is configured.';
-  } catch (cause) {
-    error.value = cause.message;
-  } finally {
-    saving.value = false;
-  }
+  await profileStore
+    .save({ ...form, countryCode: form.countryCode.toUpperCase() })
+    .catch(() => null);
 }
 
 async function uploadAvatar(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  saving.value = true;
-  error.value = '';
-  message.value = '';
   try {
-    const slot = await apiFetch('/users/me/avatar/upload-session', {
-      method: 'POST',
-      body: JSON.stringify({ fileName: file.name, contentType: file.type, fileSize: file.size }),
-    });
-    const uppy = new Uppy({
-      restrictions: {
-        maxNumberOfFiles: 1,
-        maxFileSize: 5 * 1024 * 1024,
-        allowedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
-      },
-    });
-    uppy.use(XHRUpload, {
-      endpoint: slot.uploadUrl,
-      method: 'PUT',
-      formData: false,
-      headers: { 'Content-Type': file.type },
-      allowedMetaFields: false,
-      getResponseData: () => ({}),
-    });
-    uppy.addFile({ name: file.name, type: file.type, data: file });
-    const result = await uppy.upload();
-    uppy.destroy();
-    if (result.failed?.length) throw new Error(result.failed[0].error?.message || 'Upload failed');
-    await apiFetch('/users/me/avatar/finalize', { method: 'POST' });
-    await auth.refresh();
-    avatarVersion.value = Date.now();
-    message.value = 'Profile picture updated.';
-  } catch (cause) {
-    error.value = cause.message;
+    await profileStore.uploadAvatar(file);
+  } catch {
+    // The store exposes an accessible error message.
   } finally {
-    saving.value = false;
     event.target.value = '';
   }
 }
@@ -110,11 +68,7 @@ async function deleteAccount() {
     )
   )
     return;
-  await apiFetch('/users/me', {
-    method: 'DELETE',
-    body: JSON.stringify({ confirmation: 'DELETE' }),
-  });
-  auth.user = null;
+  await profileStore.deleteAccount();
   router.replace('/');
 }
 

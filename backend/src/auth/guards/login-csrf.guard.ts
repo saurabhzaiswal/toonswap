@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { timingSafeEqual } from 'crypto';
 import { Request } from 'express';
@@ -13,7 +13,7 @@ export class LoginCsrfGuard implements CanActivate {
     const cookie = request.cookies?.[authCookieNames(this.config).loginCsrf];
     const header = request.headers['x-toonswap-login-csrf'];
     if (!cookie || typeof header !== 'string' || !this.equal(cookie, header))
-      throw new UnauthorizedException('refresh the sign-in page and try again');
+      throw new ForbiddenException('refresh the sign-in page and try again');
     return true;
   }
 
