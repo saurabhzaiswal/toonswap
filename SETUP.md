@@ -220,9 +220,14 @@ one of these approaches before deployment:
 
 1. Add a Vercel rewrite from `/api/:path*` to the deployed backend. This keeps
    the current frontend unchanged and gives the browser a same-origin API path.
-2. Update the store to read a `VITE_API_BASE_URL` at build time and set it to the
-   backend origin. If using this option, add that backend origin to
-   `FRONTEND_ORIGIN` handling as needed and never put secrets in the variable.
+2. Set `VITE_API_BASE_URL` at build time to the backend origin. The store already
+   reads this value. Add the frontend origin to backend `FRONTEND_ORIGIN` CORS
+   handling as needed, and never put secrets in a `VITE_*` variable.
+
+The frontend now supports the second option through `frontend/.env.example`.
+Set `VITE_API_BASE_URL` in the Vercel project to the deployed NestJS origin. The
+checked-in `frontend/vercel.json` also sends direct visits to Vue Router pages
+such as `/characters`, `/story-studio`, and `/blog/...` back to `index.html`.
 
 Do not deploy the current relative API path without either a rewrite or a code
 change; Vercel would otherwise look for the NestJS route in the frontend
@@ -301,4 +306,3 @@ After deployment:
    workers. A job may have completed at a provider even if the deployment failed.
 5. Do not delete bucket objects as part of an application rollback. Restore or
    repoint versioned assets separately, then run the production smoke test again.
-

@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Analytics } from '@vercel/analytics/vue';
 import { useMemeStore } from './stores/memeStore';
+import SiteHeader from './components/SiteHeader.vue';
+import SiteFooter from './components/SiteFooter.vue';
 import CharacterSelector from './components/CharacterSelector.vue';
 import UploadZone from './components/UploadZone.vue';
 import VoiceInput from './components/VoiceInput.vue';
@@ -9,7 +10,6 @@ import LanguageVoiceSelector from './components/LanguageVoiceSelector.vue';
 import VideoPreview from './components/VideoPreview.vue';
 
 const store = useMemeStore();
-const menuOpen = ref(false);
 const voiceFilter = ref('all');
 
 const voiceRegions = [
@@ -42,7 +42,6 @@ const completion = computed(() => {
 });
 
 function jumpToStudio() {
-  menuOpen.value = false;
   document.querySelector('#studio')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -56,42 +55,7 @@ function chooseVoice(voice) {
 
 <template>
   <div id="top" class="site-shell">
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="#top" aria-label="ToonSwap home">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i><b></b></span>
-          <span class="brand-name">Toon<span>Swap</span></span>
-          <small>beta</small>
-        </a>
-
-        <nav class="desktop-nav" aria-label="Main navigation">
-          <a href="#studio">Create</a>
-          <a href="#voices">Voices</a>
-          <a href="#characters">Characters</a>
-          <a href="#how-it-works">How it works</a>
-        </nav>
-
-        <div class="header-actions">
-          <span class="original-pill"><span></span> 100% original IP</span>
-          <button class="small-cta" type="button" @click="jumpToStudio">Make a toon</button>
-          <button
-            class="menu-button"
-            type="button"
-            :aria-expanded="menuOpen"
-            aria-label="Toggle navigation"
-            @click="menuOpen = !menuOpen"
-          >
-            <span></span><span></span>
-          </button>
-        </div>
-      </div>
-      <nav v-if="menuOpen" class="mobile-nav" aria-label="Mobile navigation">
-        <a href="#studio" @click="menuOpen = false">Create</a>
-        <a href="#voices" @click="menuOpen = false">Voices</a>
-        <a href="#characters" @click="menuOpen = false">Characters</a>
-        <a href="#how-it-works" @click="menuOpen = false">How it works</a>
-      </nav>
-    </header>
+    <SiteHeader />
 
     <main>
       <section class="hero section-pad" aria-labelledby="hero-title">
@@ -314,18 +278,6 @@ function chooseVoice(voice) {
       </section>
     </main>
 
-    <footer class="site-footer">
-      <div class="footer-main">
-        <div class="footer-brand">
-          <a class="brand footer-logo" href="#top"><span class="brand-mark" aria-hidden="true"><i></i><i></i><b></b></span><span class="brand-name">Toon<span>Swap</span></span></a>
-          <p>Small videos. Big joy.<br />Made locally, shared globally.</p>
-        </div>
-        <div class="footer-links"><strong>Make</strong><a href="#studio">Create a toon</a><a href="#characters">Characters</a><a href="#voices">Voice library</a></div>
-        <div class="footer-links"><strong>Learn</strong><a href="#how-it-works">How it works</a><a href="#promise">Safety promise</a><a href="#voices">Product roadmap</a></div>
-        <div class="footer-note"><strong>Built for joy, not imitation.</strong><p>ToonSwap uses original characters and original voice designs. Be kind. Get consent. Make people smile.</p></div>
-      </div>
-      <div class="footer-bottom"><span>© 2026 ToonSwap</span><span>Privacy · Terms · Community guidelines</span><span>Made with care in India, for everywhere.</span></div>
-    </footer>
-    <Analytics />
+    <SiteFooter />
   </div>
 </template>

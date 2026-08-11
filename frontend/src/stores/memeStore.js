@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
-const API_BASE = '/api/meme';
+const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const API_BASE = `${backendOrigin}/api/meme`;
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLL_ATTEMPTS = 60;
 
