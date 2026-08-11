@@ -32,6 +32,8 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresProfile: true },
     },
     { path: '/roadmap', name: 'roadmap', component: () => import('./pages/RoadmapPage.vue') },
+    // Founder page is intentionally disabled until it is ready for public launch.
+    // { path: '/about', name: 'about', component: () => import('./pages/AboutPage.vue') },
     { path: '/blog', name: 'blog', component: () => import('./pages/BlogPage.vue') },
     {
       path: '/blog/:slug',

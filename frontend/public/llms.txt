@@ -26,7 +26,10 @@ Sitemap: https://toonswap-kappa.vercel.app/sitemap.xml
 
 ## Project creator
 
-- Saurabh Choudhary: https://saurabhzaiswal.vercel.app/
+- ToonSwap was created and is engineered by Saurabh Choudhary, an AI-enabled full-stack engineer based in New Delhi, India.
+- Saurabh Choudhary portfolio: https://saurabhzaiswal.vercel.app/
+- GitHub: https://github.com/saurabhzaiswal
+- LinkedIn: https://www.linkedin.com/in/saurabh-choudhary-7ab207239/
 
 ## Content and safety notes
 

@@ -199,13 +199,23 @@ function sharedGraph() {
       description:
         'ToonSwap is an original-character AI cartoon creation studio with consent-first voice and media controls.',
       founder: { '@id': FOUNDER_ID },
+      foundingDate: '2026',
     },
     {
       '@type': 'Person',
       '@id': FOUNDER_ID,
       name: 'Saurabh Choudhary',
+      givenName: 'Saurabh',
+      familyName: 'Choudhary',
+      jobTitle: 'Creator and Full Stack Engineer',
       url: 'https://saurabhzaiswal.vercel.app/',
-      sameAs: ['https://saurabhzaiswal.vercel.app/'],
+      sameAs: [
+        'https://saurabhzaiswal.vercel.app/',
+        'https://www.linkedin.com/in/saurabh-choudhary-7ab207239/',
+        'https://github.com/saurabhzaiswal',
+        'https://dev.to/saurabhzaiswal',
+        'https://x.com/saurabhzaiswal',
+      ],
     },
     {
       '@type': 'WebSite',
@@ -214,6 +224,7 @@ function sharedGraph() {
       name: 'ToonSwap',
       alternateName: 'ToonSwap AI Cartoon Video Maker',
       inLanguage: 'en-IN',
+      creator: { '@id': FOUNDER_ID },
       publisher: { '@id': ORGANIZATION_ID },
     },
   ];
@@ -233,6 +244,7 @@ function routeGraph(route, details, canonicalUrl) {
       inLanguage: 'en-IN',
       isPartOf: { '@id': WEBSITE_ID },
       about: { '@id': ORGANIZATION_ID },
+      author: { '@id': FOUNDER_ID },
       primaryImageOfPage: {
         '@type': 'ImageObject',
         url: details.image,
@@ -264,7 +276,8 @@ function routeGraph(route, details, canonicalUrl) {
       operatingSystem: 'Web browser, Android, iOS',
       isAccessibleForFree: true,
       image: DEFAULT_IMAGE,
-      creator: { '@id': ORGANIZATION_ID },
+      creator: { '@id': FOUNDER_ID },
+      publisher: { '@id': ORGANIZATION_ID },
       featureList: [
         'Original cartoon character library and custom character briefs',
         'Multi-character scene-by-scene story planning',
@@ -344,7 +357,7 @@ function routeGraph(route, details, canonicalUrl) {
       dateModified: UPDATED_AT,
       articleSection: details.post.category,
       inLanguage: 'en-IN',
-      author: { '@id': ORGANIZATION_ID },
+      author: { '@id': FOUNDER_ID },
       publisher: { '@id': ORGANIZATION_ID },
     });
   }

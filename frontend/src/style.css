@@ -2288,6 +2288,14 @@ video {
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.74rem;
 }
+.footer-bottom a {
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+.footer-bottom a:hover {
+  color: var(--yellow);
+}
 
 button:focus-visible,
 a:focus-visible,
