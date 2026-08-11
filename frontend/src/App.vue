@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { Analytics } from '@vercel/analytics/vue';
 import { useMemeStore } from './stores/memeStore';
 import CharacterSelector from './components/CharacterSelector.vue';
 import UploadZone from './components/UploadZone.vue';
@@ -320,10 +321,11 @@ function chooseVoice(voice) {
           <p>Small videos. Big joy.<br />Made locally, shared globally.</p>
         </div>
         <div class="footer-links"><strong>Make</strong><a href="#studio">Create a toon</a><a href="#characters">Characters</a><a href="#voices">Voice library</a></div>
-        <div class="footer-links"><strong>Learn</strong><a href="#how-it-works">How it works</a><a href="#promise">Safety promise</a><a href="mailto:hello@toonswap.app">Contact</a></div>
+        <div class="footer-links"><strong>Learn</strong><a href="#how-it-works">How it works</a><a href="#promise">Safety promise</a><a href="#voices">Product roadmap</a></div>
         <div class="footer-note"><strong>Built for joy, not imitation.</strong><p>ToonSwap uses original characters and original voice designs. Be kind. Get consent. Make people smile.</p></div>
       </div>
       <div class="footer-bottom"><span>© 2026 ToonSwap</span><span>Privacy · Terms · Community guidelines</span><span>Made with care in India, for everywhere.</span></div>
     </footer>
+    <Analytics />
   </div>
 </template>

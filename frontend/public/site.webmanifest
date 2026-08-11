@@ -1,0 +1,17 @@
+{
+  "name": "ToonSwap — Cartoon Video Maker",
+  "short_name": "ToonSwap",
+  "description": "Create shareable cartoon comedy videos with original characters and regional voices.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffaf2",
+  "theme_color": "#ff624d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
