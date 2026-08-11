@@ -59,8 +59,160 @@ enum SelfInsertVoiceMode {
   CONVERT
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETION_PENDING
+}
+
+enum AgeGateStatus {
+  POLICY_REQUIRED
+  ELIGIBLE
+  GUARDIAN_REQUIRED
+  GUARDIAN_APPROVED
+}
+
+enum AuthProvider {
+  EMAIL_OTP
+  GOOGLE
+}
+
+enum OtpPurpose {
+  LOGIN
+  SIGNUP
+}
+
+model User {
+  id                     String               @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  email                  String               @unique @db.VarChar(320)
+  emailNormalized        String               @unique @db.VarChar(320)
+  emailVerifiedAt        DateTime?
+  name                   String?              @db.VarChar(120)
+  dateOfBirth            DateTime?            @db.Date
+  city                   String?              @db.VarChar(120)
+  countryCode            String?              @db.VarChar(2)
+  locale                 String?              @db.VarChar(16)
+  timezone               String?              @db.VarChar(64)
+  avatarObjectKey        String?
+  pendingAvatarObjectKey String?
+  avatarMimeType         String?              @db.VarChar(80)
+  role                   UserRole             @default(USER)
+  status                 UserStatus           @default(ACTIVE)
+  ageGateStatus          AgeGateStatus        @default(POLICY_REQUIRED)
+  profileComplete        Boolean              @default(false)
+  termsAcceptedAt        DateTime?
+  privacyAcceptedAt      DateTime?
+  lastLoginAt            DateTime?
+  lastSeenAt             DateTime?
+  blockedAt              DateTime?
+  blockedReason          String?              @db.VarChar(300)
+  deletionRequestedAt    DateTime?
+  isSystem               Boolean              @default(false)
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  sessions               AuthSession[]
+  identities             AuthIdentity[]
+  memeJobs               MemeJob[]
+  ownedCharacters        Character[]
+  storyProjects          StoryProject[]
+  consentRecords         ConsentRecord[]
+  selfInsertAssets       SelfInsertAsset[]
+  usagePolicyOverride    UsagePolicyOverride?
+  adminActionsPerformed  AdminAuditLog[]      @relation("AdminActor")
+  adminActionsReceived   AdminAuditLog[]      @relation("AdminTarget")
+
+  @@index([status, lastSeenAt(sort: Desc)])
+  @@index([role, status, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model AuthIdentity {
+  id              String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId          String       @db.Uuid
+  provider        AuthProvider
+  providerSubject String       @db.VarChar(255)
+  providerEmail   String?      @db.VarChar(320)
+  lastUsedAt      DateTime     @default(now())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@unique([userId, provider])
+  @@index([userId, lastUsedAt(sort: Desc)])
+}
+
+model AuthSession {
+  id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId        String    @db.Uuid
+  tokenHash     String    @unique @db.VarChar(64)
+  csrfTokenHash String    @db.VarChar(64)
+  ipHash        String?   @db.VarChar(64)
+  userAgent     String?   @db.VarChar(500)
+  lastSeenAt    DateTime  @default(now())
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([expiresAt, revokedAt])
+}
+
+model OtpChallenge {
+  id              String     @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  emailNormalized String     @db.VarChar(320)
+  purpose         OtpPurpose
+  codeHash        String     @db.VarChar(64)
+  requestIpHash   String?    @db.VarChar(64)
+  attempts        Int        @default(0)
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdAt       DateTime   @default(now())
+
+  @@index([emailNormalized, createdAt(sort: Desc)])
+  @@index([requestIpHash, createdAt(sort: Desc)])
+  @@index([expiresAt, consumedAt])
+}
+
+model UsagePolicyOverride {
+  id              String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId          String   @unique @db.Uuid
+  generationLimit Int?
+  windowDays      Int?
+  unlimited       Boolean  @default(false)
+  note            String?  @db.VarChar(300)
+  updatedByUserId String?  @db.Uuid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([unlimited, updatedAt(sort: Desc)])
+}
+
+model AdminAuditLog {
+  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  actorUserId  String?  @db.Uuid
+  targetUserId String?  @db.Uuid
+  action       String   @db.VarChar(80)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  actor        User?    @relation("AdminActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  target       User?    @relation("AdminTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([targetUserId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+}
+
 model MemeJob {
-  id           String    @id // UUIDv7, generated in service, doubles as session id
+  id           String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId       String    @db.Uuid
   character    String
   language     String    @default("hindi") // 'bhojpuri' | 'kannada' | 'hindi' | ...
   voiceStyle   String    @default("comedy-uncle") // generic style id, never a real person's name
@@ -73,12 +225,15 @@ model MemeJob {
   watermarked  Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, status, createdAt(sort: Desc)])
 }
 
 model Character {
-  id                    String           @id
+  id                    String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
   slug                  String           @unique
   name                  String
   worldId               String
@@ -93,20 +248,21 @@ model Character {
   tags                  Json?
   status                CatalogStatus    @default(PLANNED)
   isSystem              Boolean          @default(true)
-  ownerSessionId        String?
-  consentRecordId       String?
-  defaultVoiceProfileId String?
+  ownerUserId           String?          @db.Uuid
+  consentRecordId       String?          @db.Uuid
+  defaultVoiceProfileId String?          @db.Uuid
   defaultVoiceProfile   VoiceProfile?    @relation("DefaultCharacterVoice", fields: [defaultVoiceProfileId], references: [id], onDelete: SetNull)
+  owner                 User?            @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   storyCharacters       StoryCharacter[]
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
   @@index([worldId, status])
-  @@index([ownerSessionId])
+  @@index([ownerUserId])
 }
 
 model VoiceProfile {
-  id                   String           @id
+  id                   String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
   slug                 String           @unique
   name                 String
   languageCode         String
@@ -131,8 +287,8 @@ model VoiceProfile {
 }
 
 model StoryProject {
-  id                    String           @id
-  ownerSessionId        String
+  id                    String            @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId                String            @db.Uuid
   title                 String
   prompt                String
   worldId               String
@@ -141,38 +297,39 @@ model StoryProject {
   visualStyle           String
   primaryLanguageCode   String
   targetDurationSeconds Int
-  captionsEnabled       Boolean          @default(true)
-  mode                  StudioMode       @default(SIMPLE)
-  status                ProjectStatus    @default(DRAFT)
-  version               Int              @default(1)
+  captionsEnabled       Boolean           @default(true)
+  mode                  StudioMode        @default(SIMPLE)
+  status                ProjectStatus     @default(DRAFT)
+  version               Int               @default(1)
   moderationState       Json?
   costEstimate          Json?
   storyCharacters       StoryCharacter[]
   scenes                StoryScene[]
   selfInsertAssets      SelfInsertAsset[]
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 
-  @@index([ownerSessionId, updatedAt])
+  @@index([userId, updatedAt(sort: Desc)])
   @@index([status, updatedAt])
 }
 
 model StoryCharacter {
-  id             String        @id
-  projectId      String
-  characterId    String?
-  voiceProfileId String?
-  selfInsertAssetId String?
-  role           String
-  sortOrder      Int
-  customSnapshot Json?
-  direction      Json?
-  project        StoryProject  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  character      Character?    @relation(fields: [characterId], references: [id], onDelete: SetNull)
-  voiceProfile   VoiceProfile? @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
-  selfInsertAsset SelfInsertAsset? @relation(fields: [selfInsertAssetId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId         String           @db.Uuid
+  characterId       String?          @db.Uuid
+  voiceProfileId    String?          @db.Uuid
+  selfInsertAssetId String?          @db.Uuid
+  role              String
+  sortOrder         Int
+  customSnapshot    Json?
+  direction         Json?
+  project           StoryProject     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  character         Character?       @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  voiceProfile      VoiceProfile?    @relation(fields: [voiceProfileId], references: [id], onDelete: SetNull)
+  selfInsertAsset   SelfInsertAsset? @relation(fields: [selfInsertAssetId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   @@unique([projectId, sortOrder])
   @@index([characterId])
@@ -181,24 +338,25 @@ model StoryCharacter {
 }
 
 model ConsentRecord {
-  id                String            @id
-  ownerSessionId    String
+  id                 String            @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId             String            @db.Uuid
   likenessAuthorized Boolean
-  voiceAuthorized   Boolean
-  retentionAccepted Boolean
-  policyVersion     String
-  createdAt         DateTime          @default(now())
-  withdrawnAt       DateTime?
-  selfInsertAssets  SelfInsertAsset[]
+  voiceAuthorized    Boolean
+  retentionAccepted  Boolean
+  policyVersion      String
+  createdAt          DateTime          @default(now())
+  withdrawnAt        DateTime?
+  selfInsertAssets   SelfInsertAsset[]
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([ownerSessionId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model SelfInsertAsset {
-  id                    String              @id
-  ownerSessionId        String
-  projectId             String?
-  consentRecordId       String
+  id                    String              @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId                String              @db.Uuid
+  projectId             String?             @db.Uuid
+  consentRecordId       String              @db.Uuid
   displayName           String
   photoSourceUrl        String?
   voiceSourceUrl        String?
@@ -206,24 +364,25 @@ model SelfInsertAsset {
   voiceReferenceUrl     String?
   voiceMode             SelfInsertVoiceMode @default(AS_IS)
   voiceStyle            String?
-  status                SelfInsertStatus     @default(DRAFT)
+  status                SelfInsertStatus    @default(DRAFT)
   failureReason         String?
   expiresAt             DateTime
   deletedAt             DateTime?
-  project               StoryProject?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  consentRecord         ConsentRecord         @relation(fields: [consentRecordId], references: [id], onDelete: Restrict)
+  project               StoryProject?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  consentRecord         ConsentRecord       @relation(fields: [consentRecordId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   storyCharacters       StoryCharacter[]
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
-  @@index([ownerSessionId, status])
+  @@index([userId, status, updatedAt(sort: Desc)])
   @@index([projectId])
   @@index([expiresAt, status])
 }
 
 model StoryScene {
-  id                String       @id
-  projectId         String
+  id                String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId         String       @db.Uuid
   sortOrder         Int
   title             String
   durationSeconds   Int

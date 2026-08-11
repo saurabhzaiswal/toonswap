@@ -1,6 +1,13 @@
 import { Readable } from 'node:stream';
 
-const FORWARDED_REQUEST_HEADERS = ['content-type', 'x-toonswap-session', 'accept'];
+const FORWARDED_REQUEST_HEADERS = [
+  'content-type',
+  'accept',
+  'cookie',
+  'user-agent',
+  'x-toonswap-csrf',
+  'x-toonswap-login-csrf',
+];
 const FORWARDED_RESPONSE_HEADERS = [
   'content-type',
   'cache-control',
@@ -8,6 +15,7 @@ const FORWARDED_RESPONSE_HEADERS = [
   'etag',
   'last-modified',
   'x-content-type-options',
+  'location',
 ];
 
 export default async function handler(request, response) {
@@ -49,6 +57,12 @@ export default async function handler(request, response) {
     const value = upstream.headers.get(name);
     if (value) response.setHeader(name, value);
   });
+  const responseHeaders = upstream.headers;
+  const setCookies =
+    typeof responseHeaders.getSetCookie === 'function'
+      ? responseHeaders.getSetCookie()
+      : [responseHeaders.get('set-cookie')].filter(Boolean);
+  if (setCookies.length) response.setHeader('set-cookie', setCookies);
   if (!upstream.body || request.method === 'HEAD') return response.end();
   Readable.fromWeb(upstream.body).pipe(response);
 }

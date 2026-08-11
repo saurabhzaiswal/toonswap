@@ -47,7 +47,6 @@ export class StoryCastMemberDto {
 }
 
 export class CreateStoryProjectDto {
-  @IsOptional() @IsString() ownerSessionId?: string;
   @IsOptional() @IsString() @MaxLength(160) title?: string;
   @IsString() @MinLength(12) @MaxLength(12000) prompt!: string;
   @IsOptional() @IsString() era?: string;

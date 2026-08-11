@@ -6,11 +6,15 @@ import { MemeModule } from './meme/meme.module';
 import { DatabaseModule } from './database/database.module';
 import { StudioModule } from './studio/studio.module';
 import { SelfInsertModule } from './self-insert/self-insert.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
+    AuthModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,6 +29,8 @@ import { SelfInsertModule } from './self-insert/self-insert.module';
     MemeModule,
     StudioModule,
     SelfInsertModule,
+    UsersModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

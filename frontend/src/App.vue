@@ -9,8 +9,12 @@ import VoiceInput from './components/VoiceInput.vue';
 import LanguageVoiceSelector from './components/LanguageVoiceSelector.vue';
 import VideoPreview from './components/VideoPreview.vue';
 import AppButton from './components/ui/AppButton.vue';
+import { useAuthStore } from './stores/authStore';
+import { useRouter } from 'vue-router';
 
 const store = useMemeStore();
+const auth = useAuthStore();
+const router = useRouter();
 const voiceFilter = ref('all');
 
 const voiceRegions = [
@@ -109,6 +113,10 @@ const completion = computed(() => {
 });
 
 function jumpToStudio() {
+  if (!auth.signedIn) {
+    router.push({ name: 'signup', query: { redirect: '/#studio' } });
+    return;
+  }
   document.querySelector('#studio')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -144,7 +152,7 @@ function chooseVoice(voice) {
           <div class="hero-proof" aria-label="Product benefits">
             <span><b>30 sec</b> to start</span>
             <span><b>Private</b> by design</span>
-            <span><b>No account</b> needed</span>
+            <span><b>Protected</b> account</span>
           </div>
         </div>
 
@@ -191,7 +199,31 @@ function chooseVoice(voice) {
           <p>No editing timeline. No complicated prompt. Just pick, add, and play.</p>
         </div>
 
-        <div class="creator-shell">
+        <div v-if="!auth.signedIn" class="studio-auth-gate">
+          <div class="gate-mark"><img src="/favicon.svg" alt="" /></div>
+          <p class="kicker">Your private creator workspace</p>
+          <h3>Sign in before you upload a face, voice, or story.</h3>
+          <p>
+            We keep creation tools behind an account so your projects, consent records, uploads, and
+            usage limits stay tied to you—not to an anonymous browser session.
+          </p>
+          <div>
+            <AppButton to="/signup" arrow>Create free account</AppButton
+            ><AppButton to="/login" variant="outline">Sign in</AppButton>
+          </div>
+          <small>No password required · Email OTP · Google when configured</small>
+        </div>
+        <div v-else-if="auth.needsProfile" class="studio-auth-gate">
+          <div class="gate-mark"><img src="/favicon.svg" alt="" /></div>
+          <p class="kicker">One safe step left</p>
+          <h3>Complete your private profile before creating.</h3>
+          <p>
+            Add the minimum information needed for account safety, regional settings, and the
+            configured age policy.
+          </p>
+          <div><AppButton to="/profile" arrow>Complete profile</AppButton></div>
+        </div>
+        <div v-else class="creator-shell">
           <div class="creator-intro">
             <div>
               <span>Guided creator</span>
@@ -452,7 +484,7 @@ function chooseVoice(voice) {
         <p class="kicker">Your group chat is waiting</p>
         <h2>Make someone's day<br />a little more <em>toon.</em></h2>
         <AppButton variant="primary" arrow @click="jumpToStudio">Create my first toon</AppButton>
-        <small>Free preview · No account · Original characters</small>
+        <small>Passwordless account · Private workspace · Original characters</small>
       </section>
     </main>
 

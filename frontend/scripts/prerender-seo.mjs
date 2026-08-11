@@ -24,6 +24,10 @@ const routes = [
   { name: 'privacy', path: '/privacy', params: {} },
   { name: 'terms', path: '/terms', params: {} },
   { name: 'community', path: '/community-guidelines', params: {} },
+  { name: 'login', path: '/login', params: {} },
+  { name: 'signup', path: '/signup', params: {} },
+  { name: 'profile', path: '/profile', params: {} },
+  { name: 'admin', path: '/admin', params: {} },
 ];
 
 function escapeHtml(value) {
@@ -63,10 +67,23 @@ function renderRoute(route) {
       `<script id="toonswap-route-schema" type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replaceAll('<', '\\u003c')}</script>`,
     );
 
+  const privateRoute = [
+    'characters',
+    'voices',
+    'story-studio',
+    'login',
+    'signup',
+    'profile',
+    'admin',
+  ].includes(route.name);
   const namedMeta = {
     description: details.description,
-    robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
-    googlebot: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    robots: privateRoute
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    googlebot: privateRoute
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
     'twitter:card': 'summary_large_image',
     'twitter:title': details.title,
     'twitter:description': details.description,
@@ -118,4 +135,4 @@ for (const route of routes) {
   await writeFile(outputFile, renderRoute(route), 'utf8');
 }
 
-console.log(`Generated route-aware SEO HTML for ${routes.length} public URLs.`);
+console.log(`Generated route-aware SEO HTML for ${routes.length} public and protected URLs.`);

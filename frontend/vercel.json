@@ -4,6 +4,10 @@
     { "source": "/characters", "destination": "/characters/index.html" },
     { "source": "/voices", "destination": "/voices/index.html" },
     { "source": "/story-studio", "destination": "/story-studio/index.html" },
+    { "source": "/login", "destination": "/login/index.html" },
+    { "source": "/signup", "destination": "/signup/index.html" },
+    { "source": "/profile", "destination": "/profile/index.html" },
+    { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/roadmap", "destination": "/roadmap/index.html" },
     { "source": "/blog", "destination": "/blog/index.html" },
     {

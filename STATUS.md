@@ -2,6 +2,32 @@
 
 Updated: 11 August 2026
 
+## V8 authentication, RBAC, admin, and UUIDv7 data model
+
+- Added passwordless email OTP and optional Google Identity Services sign-in.
+  OTP values are HMAC-hashed, expiring, single-use, attempt-limited, and request
+  rate-limited. Browser sessions use opaque httpOnly cookies plus a separate
+  double-submit CSRF token; logout and logout-all revoke server records.
+- Added private profiles with display name, date of birth, city, country,
+  locale, timezone, Uppy-to-R2 profile pictures, terms/privacy acknowledgement,
+  age-policy state, and self-service permanent account deletion.
+- Added USER/ADMIN RBAC, fail-closed generation policy checks, per-account usage
+  overrides, blocked-account session revocation, admin audit logs, and an
+  interactive users/jobs dashboard with indexed search, filters, pagination,
+  roles, blocking, last-seen data, and usage controls.
+- Migrated Meme, Story, Consent, SelfInsert, and custom Character ownership from
+  anonymous browser secrets to authenticated user relations. Legacy anonymous
+  rows are preserved under a blocked system owner for migration review.
+- Every Prisma model primary key now uses
+  `@id @default(dbgenerated("uuidv7()")) @db.Uuid`; relation columns are native
+  PostgreSQL UUIDs and migrations require a database `uuidv7()` function.
+- Added responsive MJML OTP mail, protected-route UI, account-aware header using
+  the real favicon mark, private-route noindex HTML, creator identity JSON-LD,
+  and an auth-capable Vercel reverse proxy that preserves cookies and CSRF.
+- WebAuthn/passkeys remain explicitly documented as a future enhancement rather
+  than an unimplemented security claim. Launch age and quota windows remain
+  operator-configured; generation fails closed while either policy is missing.
+
 ## V7 route SEO and full responsive polish
 
 - Added route-aware titles, descriptions, canonicals, Open Graph/Twitter cards, index directives, and working JSON-LD graphs for every public URL. The schemas cover Organization, WebSite, WebPage/CollectionPage, BreadcrumbList, SoftwareApplication, character/voice ItemLists, the six-step HowTo workflow, Blog, and each BlogPosting without inventing reviews, prices, or unsupported product claims.

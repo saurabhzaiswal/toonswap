@@ -4,6 +4,7 @@ const SITE_URL = 'https://toonswap.vercel.app';
 const DEFAULT_IMAGE = `${SITE_URL}/og.png`;
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
+const FOUNDER_ID = `${SITE_URL}/#founder`;
 const UPDATED_AT = '2026-08-11';
 
 const pageSeo = {
@@ -59,6 +60,28 @@ const pageSeo = {
     title: 'Community Guidelines | Original, Kind & Consent-First Cartoons',
     description:
       'Create joyful original stories while respecting real people, children, cultures, music, voices, copyrighted work, and community safety.',
+    type: 'WebPage',
+  },
+  login: {
+    title: 'Sign In | ToonSwap Creator Account',
+    description:
+      'Sign in to your protected ToonSwap creator workspace with a passwordless email code or configured Google sign-in.',
+    type: 'WebPage',
+  },
+  signup: {
+    title: 'Create Your ToonSwap Account',
+    description:
+      'Create a protected ToonSwap account for original characters, consented media, voices, and cartoon story projects.',
+    type: 'WebPage',
+  },
+  profile: {
+    title: 'Your ToonSwap Profile',
+    description: 'Manage your private ToonSwap profile and account safety settings.',
+    type: 'WebPage',
+  },
+  admin: {
+    title: 'ToonSwap Admin Dashboard',
+    description: 'Role-protected ToonSwap administration.',
     type: 'WebPage',
   },
 };
@@ -175,6 +198,14 @@ function sharedGraph() {
       image: DEFAULT_IMAGE,
       description:
         'ToonSwap is an original-character AI cartoon creation studio with consent-first voice and media controls.',
+      founder: { '@id': FOUNDER_ID },
+    },
+    {
+      '@type': 'Person',
+      '@id': FOUNDER_ID,
+      name: 'Saurabh Choudhary',
+      url: 'https://saurabhzaiswal.vercel.app/',
+      sameAs: ['https://saurabhzaiswal.vercel.app/'],
     },
     {
       '@type': 'WebSite',
@@ -345,13 +376,26 @@ export function applySeo(route) {
 
   document.title = details.title;
   setMetaName('description', details.description);
+  const privatePage = [
+    'characters',
+    'voices',
+    'story-studio',
+    'login',
+    'signup',
+    'profile',
+    'admin',
+  ].includes(route.name);
   setMetaName(
     'robots',
-    'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    privatePage
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   );
   setMetaName(
     'googlebot',
-    'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    privatePage
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   );
   setCanonical(canonicalUrl);
   setAlternateLanguage('en', canonicalUrl);

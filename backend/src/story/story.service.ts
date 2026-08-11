@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { StudioMode } from '@prisma/client';
 import { v7 as uuidv7 } from 'uuid';
 import { PrismaService } from '../database/prisma.service';
@@ -13,10 +8,9 @@ import { CreateStoryProjectDto, StorySceneDto, UpdateStorySceneDto } from './dto
 export class StoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(input: CreateStoryProjectDto) {
+  async create(userId: string, input: CreateStoryProjectDto) {
     const duration = Number(input.duration ?? 30);
     const projectId = uuidv7();
-    const ownerSessionId = input.ownerSessionId?.trim() || uuidv7();
     const mode = input.mode?.toLowerCase() === 'creator' ? StudioMode.CREATOR : StudioMode.SIMPLE;
     const scenes = (
       input.scenes?.length
@@ -30,7 +24,7 @@ export class StoryService {
     const project = await this.prisma.storyProject.create({
       data: {
         id: projectId,
-        ownerSessionId,
+        userId,
         title: input.title?.trim() || 'Untitled ToonSwap story',
         prompt: input.prompt.trim(),
         worldId: input.era || 'stone-spark',
@@ -44,9 +38,11 @@ export class StoryService {
         storyCharacters: {
           create: (input.cast ?? []).map((member, index) => ({
             id: uuidv7(),
-            characterId: member.selfInsertAssetId ? null : member.id || null,
-            voiceProfileId: member.voiceProfileId || null,
-            selfInsertAssetId: member.selfInsertAssetId || null,
+            character: member.selfInsertAssetId ? undefined : this.connectByIdOrSlug(member.id),
+            voiceProfile: this.connectByIdOrSlug(member.voiceProfileId),
+            selfInsertAsset: member.selfInsertAssetId
+              ? { connect: { id: member.selfInsertAssetId } }
+              : undefined,
             role: member.role || (index === 0 ? 'lead' : 'supporting'),
             sortOrder: index,
             customSnapshot: member.customSnapshot as any,
@@ -56,12 +52,12 @@ export class StoryService {
       },
       include: { storyCharacters: true, scenes: { orderBy: { sortOrder: 'asc' } } },
     });
-    return { ownerSessionId, project };
+    return { project };
   }
 
-  async get(projectId: string, ownerSessionId?: string) {
-    const project = await this.prisma.storyProject.findUnique({
-      where: { id: projectId },
+  async get(projectId: string, userId: string) {
+    const project = await this.prisma.storyProject.findFirst({
+      where: { id: projectId, userId },
       include: {
         storyCharacters: {
           include: { character: true, voiceProfile: true, selfInsertAsset: true },
@@ -71,22 +67,20 @@ export class StoryService {
       },
     });
     if (!project) throw new NotFoundException('project not found');
-    this.assertOwner(project.ownerSessionId, ownerSessionId);
     return project;
   }
 
   async updateScene(
     projectId: string,
     sceneId: string,
-    ownerSessionId: string | undefined,
+    userId: string,
     input: UpdateStorySceneDto,
   ) {
-    const project = await this.prisma.storyProject.findUnique({
-      where: { id: projectId },
-      select: { ownerSessionId: true },
+    const project = await this.prisma.storyProject.findFirst({
+      where: { id: projectId, userId },
+      select: { id: true },
     });
     if (!project) throw new NotFoundException('project not found');
-    this.assertOwner(project.ownerSessionId, ownerSessionId);
     const existing = await this.prisma.storyScene.findFirst({ where: { id: sceneId, projectId } });
     if (!existing) throw new NotFoundException('scene not found');
     return this.prisma.storyScene.update({
@@ -151,8 +145,10 @@ export class StoryService {
       },
     };
   }
-  private assertOwner(expected: string, received?: string) {
-    if (!received || received !== expected)
-      throw new ForbiddenException('valid x-toonswap-session header required');
+  private connectByIdOrSlug(value?: string) {
+    if (!value) return undefined;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+      ? { connect: { id: value } }
+      : { connect: { slug: value } };
   }
 }

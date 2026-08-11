@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia';
 import Uppy from '@uppy/core';
 import XHRUpload from '@uppy/xhr-upload';
+import { apiFetch } from '../lib/api';
 
 const storageKey = 'toonswap-project-studio-v1';
-const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
-const apiRoot = `${backendOrigin}/api`;
 const mediaDefaults = {
   voiceVolume: 100,
   voicePitch: 0,
@@ -111,7 +110,6 @@ export const useProjectStore = defineStore('projectStudio', {
       consentRetention: false,
       savedCharacterId: '',
       assetId: '',
-      ownerSessionId: '',
       status: 'local-draft',
       uploadError: '',
     },
@@ -186,7 +184,6 @@ export const useProjectStore = defineStore('projectStudio', {
             consentRetention: false,
             savedCharacterId: this.selfInsert.savedCharacterId,
             assetId: this.selfInsert.assetId,
-            ownerSessionId: this.selfInsert.ownerSessionId,
             status: this.selfInsert.status,
           },
         }),
@@ -252,7 +249,6 @@ export const useProjectStore = defineStore('projectStudio', {
       this.selfInsert.uploadError = '';
       try {
         const payload = {
-          ownerSessionId: this.selfInsert.ownerSessionId || undefined,
           displayName: this.selfInsert.displayName.trim() || 'Me in the story',
           voiceMode: this.selfInsert.voiceMode === 'convert' ? 'CONVERT' : 'AS_IS',
           voiceStyle:
@@ -268,35 +264,20 @@ export const useProjectStore = defineStore('projectStudio', {
           voiceType: this.selfInsert.voiceFile?.type,
           voiceSize: this.selfInsert.voiceFile?.size,
         };
-        const sessionResponse = await fetch(`${apiRoot}/self-insert/upload-sessions`, {
+        const session = await apiFetch('/self-insert/upload-sessions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        if (!sessionResponse.ok)
-          throw new Error(
-            (await sessionResponse.json().catch(() => null))?.message ||
-              'Could not create a private R2 upload session',
-          );
-        const session = await sessionResponse.json();
         this.selfInsert.assetId = session.assetId;
-        this.selfInsert.ownerSessionId = session.ownerSessionId;
         const files = [];
         if (this.selfInsert.photoFile)
           files.push({ kind: 'photo', file: this.selfInsert.photoFile });
         if (this.selfInsert.voiceFile)
           files.push({ kind: 'voice', file: this.selfInsert.voiceFile });
         await uploadToPrivateSlots(files, session.slots);
-        const finalizeResponse = await fetch(
-          `${apiRoot}/self-insert/assets/${session.assetId}/finalize`,
-          { method: 'POST', headers: { 'x-toonswap-session': session.ownerSessionId } },
-        );
-        if (!finalizeResponse.ok)
-          throw new Error(
-            (await finalizeResponse.json().catch(() => null))?.message ||
-              'Private upload could not be finalized',
-          );
-        const result = await finalizeResponse.json();
+        const result = await apiFetch(`/self-insert/assets/${session.assetId}/finalize`, {
+          method: 'POST',
+        });
         this.selfInsert.status = String(result.status || 'DRAFT').toLowerCase();
         this.project.cast = this.project.cast.map((item) =>
           item.id === this.selfInsert.savedCharacterId
@@ -313,10 +294,9 @@ export const useProjectStore = defineStore('projectStudio', {
       }
     },
     async clearSelfInsert() {
-      if (this.selfInsert.assetId && this.selfInsert.ownerSessionId) {
-        await fetch(`${apiRoot}/self-insert/assets/${this.selfInsert.assetId}`, {
+      if (this.selfInsert.assetId) {
+        await apiFetch(`/self-insert/assets/${this.selfInsert.assetId}`, {
           method: 'DELETE',
-          headers: { 'x-toonswap-session': this.selfInsert.ownerSessionId },
         }).catch(() => null);
       }
       if (this.selfInsert.photoPreviewUrl) URL.revokeObjectURL(this.selfInsert.photoPreviewUrl);
@@ -334,7 +314,6 @@ export const useProjectStore = defineStore('projectStudio', {
         consentRetention: false,
         savedCharacterId: '',
         assetId: '',
-        ownerSessionId: '',
         status: 'local-draft',
         uploadError: '',
       };

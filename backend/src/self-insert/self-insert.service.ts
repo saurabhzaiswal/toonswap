@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import { SelfInsertStatus, SelfInsertVoiceMode } from '@prisma/client';
@@ -50,11 +44,11 @@ export class SelfInsertService implements OnModuleInit {
       this.config.get('SELF_INSERT_MEDIA_MODERATION_ENABLED') === 'true';
     return {
       consentRecords: 'implemented',
-      sessionReusableReferences: 'implemented',
+      accountReusableReferences: 'implemented',
       sourceRetentionHours: 24,
       deletionEndpoint: 'implemented',
       directR2Uploads: 'presigned-put-with-finalize',
-      privateMediaProxy: 'session-protected',
+      privateMediaProxy: 'account-protected',
       providerQueue:
         providerEnabled && mediaModerationEnabled
           ? 'enabled'
@@ -64,7 +58,7 @@ export class SelfInsertService implements OnModuleInit {
     };
   }
 
-  async createUploadSession(input: CreateUploadSessionDto) {
+  async createUploadSession(userId: string, input: CreateUploadSessionDto) {
     const hasPhoto = Boolean(input.photoName || input.photoType || input.photoSize);
     const hasVoice = Boolean(input.voiceName || input.voiceType || input.voiceSize);
     if (!hasPhoto && !hasVoice)
@@ -92,7 +86,7 @@ export class SelfInsertService implements OnModuleInit {
     if (!input.retentionAccepted)
       throw new BadRequestException('retention acknowledgement is required before upload');
     this.moderation.assertTextAllowed(input.scriptText);
-    const ownerSessionId = input.ownerSessionId || uuidv7();
+    await this.assertProjectOwner(input.projectId, userId);
     const assetId = uuidv7();
     const consentRecordId = uuidv7();
     const [photoSlot, voiceSlot] = await Promise.all([
@@ -114,7 +108,7 @@ export class SelfInsertService implements OnModuleInit {
       await database.consentRecord.create({
         data: {
           id: consentRecordId,
-          ownerSessionId,
+          userId,
           likenessAuthorized: hasPhoto && input.likenessAuthorized,
           voiceAuthorized: hasVoice && input.voiceAuthorized,
           retentionAccepted: true,
@@ -124,7 +118,7 @@ export class SelfInsertService implements OnModuleInit {
       await database.selfInsertAsset.create({
         data: {
           id: assetId,
-          ownerSessionId,
+          userId,
           projectId: input.projectId || null,
           consentRecordId,
           displayName: input.displayName.trim(),
@@ -142,7 +136,6 @@ export class SelfInsertService implements OnModuleInit {
     });
     return {
       assetId,
-      ownerSessionId,
       expiresAt,
       uploadExpiresIn: 600,
       slots: {
@@ -152,10 +145,9 @@ export class SelfInsertService implements OnModuleInit {
     };
   }
 
-  async finalizeUpload(assetId: string, ownerSessionId?: string) {
-    const asset = await this.prisma.selfInsertAsset.findUnique({ where: { id: assetId } });
+  async finalizeUpload(assetId: string, userId: string) {
+    const asset = await this.prisma.selfInsertAsset.findFirst({ where: { id: assetId, userId } });
     if (!asset) throw new NotFoundException('self-insert asset not found');
-    this.assertOwner(asset.ownerSessionId, ownerSessionId);
     if (asset.status === SelfInsertStatus.DELETED || asset.deletedAt)
       throw new BadRequestException('self-insert asset was deleted');
     const checks = await Promise.all(
@@ -186,17 +178,15 @@ export class SelfInsertService implements OnModuleInit {
       );
     return {
       assetId,
-      ownerSessionId: asset.ownerSessionId,
       status,
       expiresAt: asset.expiresAt,
       queued: canQueue,
     };
   }
 
-  async media(assetId: string, kind: string, ownerSessionId?: string) {
-    const asset = await this.prisma.selfInsertAsset.findUnique({ where: { id: assetId } });
+  async media(assetId: string, kind: string, userId: string) {
+    const asset = await this.prisma.selfInsertAsset.findFirst({ where: { id: assetId, userId } });
     if (!asset) throw new NotFoundException('self-insert asset not found');
-    this.assertOwner(asset.ownerSessionId, ownerSessionId);
     if (asset.status === SelfInsertStatus.DELETED || asset.deletedAt)
       throw new NotFoundException('self-insert media was deleted');
     const references: Record<string, string | null> = {
@@ -210,7 +200,7 @@ export class SelfInsertService implements OnModuleInit {
     return this.storage.readPrivateObject(reference);
   }
 
-  async create(input: CreateSelfInsertDto, files: SelfInsertFiles) {
+  async create(userId: string, input: CreateSelfInsertDto, files: SelfInsertFiles) {
     if (!files.photo && !files.voice) throw new BadRequestException('photo or voice is required');
     if (files.photo && !input.likenessAuthorized)
       throw new BadRequestException('likeness permission is required');
@@ -219,7 +209,7 @@ export class SelfInsertService implements OnModuleInit {
     if (!input.retentionAccepted)
       throw new BadRequestException('retention acknowledgement is required');
     this.moderation.assertTextAllowed(input.scriptText);
-    const ownerSessionId = input.ownerSessionId || uuidv7();
+    await this.assertProjectOwner(input.projectId, userId);
     const assetId = uuidv7();
     const consentRecordId = uuidv7();
     const [photoSourceUrl, voiceSourceUrl] = await Promise.all([
@@ -243,7 +233,7 @@ export class SelfInsertService implements OnModuleInit {
       await database.consentRecord.create({
         data: {
           id: consentRecordId,
-          ownerSessionId,
+          userId,
           likenessAuthorized: Boolean(files.photo && input.likenessAuthorized),
           voiceAuthorized: Boolean(files.voice && input.voiceAuthorized),
           retentionAccepted: true,
@@ -253,7 +243,7 @@ export class SelfInsertService implements OnModuleInit {
       return database.selfInsertAsset.create({
         data: {
           id: assetId,
-          ownerSessionId,
+          userId,
           projectId: input.projectId || null,
           consentRecordId,
           displayName: input.displayName.trim(),
@@ -281,7 +271,6 @@ export class SelfInsertService implements OnModuleInit {
         },
       );
     return {
-      ownerSessionId,
       assetId: asset.id,
       status: asset.status,
       expiresAt: asset.expiresAt,
@@ -289,12 +278,11 @@ export class SelfInsertService implements OnModuleInit {
     };
   }
 
-  async get(assetId: string, ownerSessionId?: string) {
-    const asset = await this.prisma.selfInsertAsset.findUnique({
-      where: { id: assetId },
+  async get(assetId: string, userId: string) {
+    const asset = await this.prisma.selfInsertAsset.findFirst({
+      where: { id: assetId, userId },
       select: {
         id: true,
-        ownerSessionId: true,
         displayName: true,
         status: true,
         characterReferenceUrl: true,
@@ -305,7 +293,6 @@ export class SelfInsertService implements OnModuleInit {
       },
     });
     if (!asset) throw new NotFoundException('self-insert asset not found');
-    this.assertOwner(asset.ownerSessionId, ownerSessionId);
     return {
       id: asset.id,
       displayName: asset.displayName,
@@ -318,10 +305,9 @@ export class SelfInsertService implements OnModuleInit {
     };
   }
 
-  async delete(assetId: string, ownerSessionId?: string) {
-    const asset = await this.prisma.selfInsertAsset.findUnique({ where: { id: assetId } });
+  async delete(assetId: string, userId: string) {
+    const asset = await this.prisma.selfInsertAsset.findFirst({ where: { id: assetId, userId } });
     if (!asset) throw new NotFoundException('self-insert asset not found');
-    this.assertOwner(asset.ownerSessionId, ownerSessionId);
     await Promise.all(
       [
         asset.photoSourceUrl,
@@ -352,9 +338,13 @@ export class SelfInsertService implements OnModuleInit {
     return { assetId, status: 'DELETED' };
   }
 
-  private assertOwner(expected: string, received?: string) {
-    if (!received || received !== expected)
-      throw new ForbiddenException('valid x-toonswap-session header required');
+  private async assertProjectOwner(projectId: string | undefined, userId: string) {
+    if (!projectId) return;
+    const project = await this.prisma.storyProject.findFirst({
+      where: { id: projectId, userId },
+      select: { id: true },
+    });
+    if (!project) throw new NotFoundException('project not found');
   }
   private providerReady() {
     return (

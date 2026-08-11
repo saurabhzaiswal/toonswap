@@ -1,0 +1,77 @@
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { AuthenticatedRequest } from './auth.types';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { Public } from './decorators/public.decorator';
+import { GoogleCredentialDto, RequestOtpDto, VerifyOtpDto } from './dto/auth.dto';
+import { LoginCsrfGuard } from './guards/login-csrf.guard';
+
+@Controller('api/auth')
+export class AuthController {
+  constructor(
+    private readonly auth: AuthService,
+    private readonly config: ConfigService,
+  ) {}
+
+  @Public()
+  @Get('config')
+  configResponse(@Res({ passthrough: true }) response: Response) {
+    return {
+      loginCsrf: this.auth.issueLoginCsrf(response),
+      otpEnabled: Boolean(
+        this.config.get<string>('SMTP_HOST') && this.config.get<string>('MAIL_FROM'),
+      ),
+      googleClientId: this.config.get<string>('GOOGLE_CLIENT_ID') || null,
+      passkeys: 'roadmap',
+    };
+  }
+
+  @Public()
+  @UseGuards(LoginCsrfGuard)
+  @Post('otp/request')
+  requestOtp(@Body() body: RequestOtpDto, @Req() request: Request) {
+    return this.auth.requestOtp(body.email, body.purpose, request);
+  }
+
+  @Public()
+  @UseGuards(LoginCsrfGuard)
+  @Post('otp/verify')
+  verifyOtp(
+    @Body() body: VerifyOtpDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.auth.verifyOtp(body.challengeId, body.code, request, response);
+  }
+
+  @Public()
+  @UseGuards(LoginCsrfGuard)
+  @Post('google')
+  google(
+    @Body() body: GoogleCredentialDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.auth.googleLogin(body.credential, request, response);
+  }
+
+  @Get('session')
+  session(@CurrentUser() user: AuthenticatedRequest['user']) {
+    return this.auth.session(user.id);
+  }
+
+  @Post('logout')
+  logout(@Req() request: AuthenticatedRequest, @Res({ passthrough: true }) response: Response) {
+    return this.auth.logout(request.authSession.id, response);
+  }
+
+  @Post('logout-all')
+  logoutEverywhere(
+    @CurrentUser() user: AuthenticatedRequest['user'],
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.auth.logoutEverywhere(user.id, response);
+  }
+}

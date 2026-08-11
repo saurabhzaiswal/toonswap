@@ -3,7 +3,7 @@
     <div class="footer-main">
       <div class="footer-brand">
         <RouterLink class="brand footer-logo" to="/">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i><b></b></span>
+          <img class="brand-mark" src="/favicon.svg" alt="" aria-hidden="true" />
           <span class="brand-name">Toon<span>Swap</span></span>
         </RouterLink>
         <p>Build original cartoon worlds.<br />Made locally, shared globally.</p>

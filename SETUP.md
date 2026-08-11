@@ -10,7 +10,7 @@ validated production assets before processing can succeed reliably.
 ### Prerequisites
 
 - Node.js 20 or newer and npm
-- PostgreSQL 15+ and Redis 7+, installed locally or run with Docker
+- PostgreSQL 18+ (or a provider-supported `uuidv7()` function) and Redis 7+
 - FFmpeg, including the `drawtext` filter, available on `PATH`
 - An S3-compatible bucket that the backend can write to and whose generated
   object URLs the backend worker and browser can read
@@ -36,7 +36,7 @@ docker run --name toonswap-postgres \
   -e POSTGRES_DB=toonswap \
   -p 5432:5432 \
   -v toonswap-postgres-data:/var/lib/postgresql/data \
-  -d postgres:16-alpine
+  -d postgres:18-alpine
 
 docker run --name toonswap-redis \
   -p 6379:6379 \
@@ -69,6 +69,26 @@ Fill `backend/.env` with development values:
 PORT=3000
 FRONTEND_ORIGIN=http://localhost:5173
 
+AUTH_SECRET=<generate-at-least-32-random-characters>
+AUTH_COOKIE_SECURE=false
+AUTH_COOKIE_SAME_SITE=lax
+SESSION_TTL_DAYS=30
+SMTP_HOST=<smtp-host>
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=<smtp-user>
+SMTP_PASSWORD=<smtp-password>
+MAIL_FROM=ToonSwap <no-reply@example.com>
+GOOGLE_CLIENT_ID=
+BOOTSTRAP_ADMIN_EMAILS=your-verified-admin@example.com
+
+# Confirm these launch policies before allowing generation.
+MINIMUM_SELF_SERVE_AGE=
+FREE_GENERATION_LIMIT=1
+FREE_GENERATION_WINDOW_DAYS=
+ADMIN_GENERATION_LIMIT=0
+ADMIN_GENERATION_WINDOW_DAYS=0
+
 DATABASE_URL=postgresql://toonswap:toonswap_dev@localhost:5432/toonswap
 
 REDIS_HOST=localhost
@@ -99,6 +119,15 @@ npx prisma migrate dev --name studio-foundation
 npx prisma db seed
 npm run start:dev
 ```
+
+Every Prisma model uses a PostgreSQL UUID primary key with a database-generated
+UUIDv7 default. The migration deliberately stops if `uuidv7()` is unavailable;
+do not replace it with random UUIDv4 defaults. Existing anonymous development
+records are preserved under a blocked system owner during the auth migration.
+
+`BOOTSTRAP_ADMIN_EMAILS` applies only when a verified account is first created.
+After your administrator account exists, clear that variable and use the
+role-protected `/admin` dashboard for later role changes.
 
 The API listens on `http://localhost:3000`. Short-form generation routes are
 under `/api/meme`; scalable story/catalog routes are under `/api/studio`.
@@ -190,12 +219,14 @@ currently selected Replicate model/version against its input and output schema.
 With both apps running:
 
 1. Confirm the frontend loads at `http://localhost:5173`.
-2. Submit a short synthetic/consented test image and script.
-3. Verify the generate response returns a UUIDv7 session ID.
-4. Verify the job moves from `PENDING` to `PROCESSING` and then `DONE`.
-5. Confirm the resulting object URL is readable and the free output contains the
+2. Sign in with an email code, complete the private profile, and verify the
+   configured age and generation policies allow the test.
+3. Submit a short synthetic/consented test image and script.
+4. Verify the generate response returns an account-owned UUIDv7 job ID.
+5. Verify the job moves from `PENDING` to `PROCESSING` and then `DONE`.
+6. Confirm the resulting object URL is readable and the free output contains the
    watermark.
-6. Inspect the NestJS worker logs and Redis queue if the job fails. Provider
+7. Inspect the NestJS worker logs and Redis queue if the job fails. Provider
    placeholders are expected to fail until replaced.
 
 ## Production
@@ -341,7 +372,7 @@ Apply the policy in the bucket settings and verify from the real frontend
 origin; origin values must match exactly. Cloudflare's current instructions are
 in [Configure CORS](https://developers.cloudflare.com/r2/buckets/cors/).
 
-Private media is streamed through `GET /api/self-insert/assets/:assetId/media/:kind` only after the caller supplies the matching anonymous `x-toonswap-session` header. The response uses `private, no-store`; raw R2 read URLs are not returned to the UI. PUT URLs are short-lived bearer tokens and should never be logged. For a same-origin browser path, route the frontend's `/api/*` through Vercel to the Nest service; otherwise `VITE_API_BASE_URL` must point to an app-owned API hostname. Do not make the self-insert prefix public through an R2 custom domain.
+Private media is streamed through `GET /api/self-insert/assets/:assetId/media/:kind` only for the authenticated owning account. The response uses `private, no-store`; raw R2 read URLs are not returned to the UI. PUT URLs are short-lived bearer tokens and should never be logged. The Vercel proxy forwards opaque auth cookies, CSRF headers, and upstream `Set-Cookie` values; otherwise `VITE_API_BASE_URL` must point to an app-owned API hostname with credentialed CORS configured. Do not make the self-insert prefix public through an R2 custom domain.
 
 ### Release verification
 

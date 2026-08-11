@@ -6,6 +6,7 @@ import { PrismaService } from './prisma.service';
 import { StorageService } from '../media/storage.service';
 
 interface CreateJobInput {
+  userId: string;
   character: string;
   language?: string;
   voiceStyle?: string;
@@ -25,7 +26,7 @@ export class MemeService {
   ) {}
 
   async createJob(input: CreateJobInput) {
-    const sessionId = uuidv7();
+    const jobId = uuidv7();
 
     const selfieUrl = await this.storage.uploadBuffer(
       input.selfie.buffer,
@@ -39,7 +40,8 @@ export class MemeService {
 
     const job = await this.prisma.memeJob.create({
       data: {
-        id: sessionId,
+        id: jobId,
+        userId: input.userId,
         character: input.character,
         language: input.language ?? 'hindi',
         voiceStyle: input.voiceStyle ?? 'comedy-uncle',
@@ -64,13 +66,13 @@ export class MemeService {
     return job;
   }
 
-  async getStatus(sessionId: string) {
-    const job = await this.prisma.memeJob.findUnique({ where: { id: sessionId } });
+  async getStatus(jobId: string, userId: string) {
+    const job = await this.prisma.memeJob.findFirst({ where: { id: jobId, userId } });
     if (!job) {
-      throw new NotFoundException('session not found');
+      throw new NotFoundException('job not found');
     }
     return {
-      sessionId: job.id,
+      jobId: job.id,
       status: job.status,
       outputUrl: job.status === 'DONE' ? job.outputUrl : null,
       errorMessage: job.status === 'FAILED' ? job.errorMessage : null,

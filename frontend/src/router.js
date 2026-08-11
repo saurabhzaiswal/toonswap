@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from './App.vue';
 import { applySeo, validBlogSlugs } from './seo';
+import { useAuthStore } from './stores/authStore';
+import { pinia } from './pinia';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,12 +16,19 @@ const router = createRouter({
       path: '/characters',
       name: 'characters',
       component: () => import('./pages/CharactersPage.vue'),
+      meta: { requiresAuth: true },
     },
-    { path: '/voices', name: 'voices', component: () => import('./pages/VoicesPage.vue') },
+    {
+      path: '/voices',
+      name: 'voices',
+      component: () => import('./pages/VoicesPage.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/story-studio',
       name: 'story-studio',
       component: () => import('./pages/StoryStudioPage.vue'),
+      meta: { requiresAuth: true, requiresProfile: true },
     },
     { path: '/roadmap', name: 'roadmap', component: () => import('./pages/RoadmapPage.vue') },
     { path: '/blog', name: 'blog', component: () => import('./pages/BlogPage.vue') },
@@ -28,6 +37,30 @@ const router = createRouter({
       name: 'blog-post',
       component: () => import('./pages/BlogPostPage.vue'),
       beforeEnter: (to) => (validBlogSlugs.has(to.params.slug) ? true : { name: 'blog' }),
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('./pages/AuthPage.vue'),
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: () => import('./pages/AuthPage.vue'),
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('./pages/ProfilePage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('./pages/AdminDashboardPage.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/privacy',
@@ -49,6 +82,19 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
+});
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore(pinia);
+  await auth.bootstrap();
+  if (to.meta.requiresAuth && !auth.signedIn)
+    return { name: 'login', query: { redirect: to.fullPath } };
+  if (to.meta.requiresAdmin && !auth.isAdmin) return { name: 'home' };
+  if (to.meta.requiresProfile && auth.needsProfile)
+    return { name: 'profile', query: { redirect: to.fullPath } };
+  if (to.meta.guestOnly && auth.signedIn)
+    return auth.needsProfile ? { name: 'profile' } : { name: 'story-studio' };
+  return true;
 });
 
 router.afterEach((to) => applySeo(to));

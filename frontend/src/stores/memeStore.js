@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-
-const backendOrigin = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
-const API_BASE = `${backendOrigin}/api/meme`;
+import { apiFetch } from '../lib/api';
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLL_ATTEMPTS = 60;
 
@@ -15,7 +13,7 @@ export const useMemeStore = defineStore('meme', {
     language: 'hindi',
     voiceStyle: 'bhojpuri-comedy-uncle',
     voiceFile: null,
-    sessionId: null,
+    jobId: null,
     status: 'idle',
     outputUrl: null,
     errorMessage: null,
@@ -48,7 +46,7 @@ export const useMemeStore = defineStore('meme', {
     },
 
     reset() {
-      this.sessionId = null;
+      this.jobId = null;
       this.status = 'idle';
       this.outputUrl = null;
       this.errorMessage = null;
@@ -72,14 +70,8 @@ export const useMemeStore = defineStore('meme', {
       }
 
       try {
-        const res = await fetch(`${API_BASE}/generate`, { method: 'POST', body: form });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          const message = Array.isArray(body.message) ? body.message.join(', ') : body.message;
-          throw new Error(message ?? `Request failed (${res.status})`);
-        }
-        const data = await res.json();
-        this.sessionId = data.sessionId;
+        const data = await apiFetch('/meme/generate', { method: 'POST', body: form });
+        this.jobId = data.jobId;
         this.status = data.status;
         await this.pollStatus();
       } catch (err) {
@@ -93,9 +85,7 @@ export const useMemeStore = defineStore('meme', {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
 
         try {
-          const res = await fetch(`${API_BASE}/${this.sessionId}/status`);
-          if (!res.ok) continue;
-          const data = await res.json();
+          const data = await apiFetch(`/meme/${this.jobId}/status`);
           this.status = data.status;
 
           if (data.status === 'DONE') {

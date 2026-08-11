@@ -6,12 +6,16 @@ import {
   Param,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { MemeService } from './meme.service';
 import { checkScriptText } from './content-filter.util';
 import { VOICE_PRESETS } from './audio-generator.service';
+import { AuthenticatedUser } from '../auth/auth.types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { GenerationPolicyGuard } from '../usage/generation-policy.guard';
 
 interface GenerateMemeBody {
   character: string;
@@ -34,6 +38,7 @@ export class MemeController {
   constructor(private readonly memeService: MemeService) {}
 
   @Post('generate')
+  @UseGuards(GenerationPolicyGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -43,7 +48,11 @@ export class MemeController {
       { limits: { fileSize: MAX_FILE_BYTES } },
     ),
   )
-  async generate(@Body() body: GenerateMemeBody, @UploadedFiles() files: UploadedMemeFiles) {
+  async generate(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: GenerateMemeBody,
+    @UploadedFiles() files: UploadedMemeFiles,
+  ) {
     if (!body.character) {
       throw new BadRequestException('character is required');
     }
@@ -81,6 +90,7 @@ export class MemeController {
     }
 
     const job = await this.memeService.createJob({
+      userId: user.id,
       character: body.character,
       language: body.language ?? 'hindi',
       voiceStyle: body.voiceStyle,
@@ -89,11 +99,11 @@ export class MemeController {
       voice,
     });
 
-    return { sessionId: job.id, status: job.status };
+    return { jobId: job.id, status: job.status };
   }
 
-  @Get(':sessionId/status')
-  async getStatus(@Param('sessionId') sessionId: string) {
-    return this.memeService.getStatus(sessionId);
+  @Get(':jobId/status')
+  async getStatus(@CurrentUser() user: AuthenticatedUser, @Param('jobId') jobId: string) {
+    return this.memeService.getStatus(jobId, user.id);
   }
 }

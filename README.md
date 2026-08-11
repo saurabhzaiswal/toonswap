@@ -1,13 +1,16 @@
 # ToonSwap
 
-Face-swap + voice-conversion meme generator using **original, non-infringing cartoon
-characters** (Chulbul, Robo Guru, Ninja Chotu) — same 90s-nostalgia vibe as
-Shinchan/Doraemon/Ninja Hattori, but characters you actually own the rights to.
+An account-protected original cartoon creator with passwordless authentication,
+custom and illustrated characters, consent-first face/voice inputs, guided story
+planning, generation quotas, and a role-protected operations dashboard.
 
 ## Stack
 - **Backend:** NestJS + Prisma (Postgres) + BullMQ/Redis + Replicate SDK + ElevenLabs API + fluent-ffmpeg
 - **Frontend:** Vue 3 (Composition API) + Pinia + Tailwind CSS + Vite
-- **Sessions:** zero-auth, UUIDv7 session IDs (job id doubles as session id)
+- **Identity:** email OTP and optional Google sign-in, opaque httpOnly sessions,
+  CSRF protection, USER/ADMIN RBAC, and indexed account ownership
+- **Database IDs:** PostgreSQL UUIDv7 on every model via
+  `@default(dbgenerated("uuidv7()")) @db.Uuid`
 
 ## Before you run this
 1. **Draw/commission your own character art and record your own reference voice
@@ -24,7 +27,7 @@ Shinchan/Doraemon/Ninja Hattori, but characters you actually own the rights to.
 ```bash
 cd backend
 npm install
-cp .env.example .env   # fill in DATABASE_URL, REDIS_*, REPLICATE_API_TOKEN, ELEVENLABS_API_KEY, S3_*
+cp .env.example .env   # configure auth/mail/policy values plus database, Redis, providers, and R2
 npx prisma migrate dev --name init
 npm run start:dev
 ```

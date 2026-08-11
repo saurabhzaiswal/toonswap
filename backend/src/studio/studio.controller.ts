@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { AuthenticatedUser } from '../auth/auth.types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CharacterCatalogService } from '../catalog/character-catalog.service';
 import { VoiceCatalogService } from '../catalog/voice-catalog.service';
 import { CreateStoryProjectDto, UpdateStorySceneDto } from '../story/dto/story.dto';
@@ -31,21 +33,24 @@ export class StudioController {
   ) {
     return this.voicesCatalog.list(languageCode, status, Number(limit), Number(offset));
   }
-  @Post('projects') createProject(@Body() body: CreateStoryProjectDto) {
-    return this.stories.create(body);
+  @Post('projects') createProject(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: CreateStoryProjectDto,
+  ) {
+    return this.stories.create(user.id, body);
   }
   @Get('projects/:projectId') getProject(
     @Param('projectId') projectId: string,
-    @Headers('x-toonswap-session') session?: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.stories.get(projectId, session);
+    return this.stories.get(projectId, user.id);
   }
   @Patch('projects/:projectId/scenes/:sceneId') updateScene(
     @Param('projectId') projectId: string,
     @Param('sceneId') sceneId: string,
-    @Headers('x-toonswap-session') session: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
     @Body() body: UpdateStorySceneDto,
   ) {
-    return this.stories.updateScene(projectId, sceneId, session, body);
+    return this.stories.updateScene(projectId, sceneId, user.id, body);
   }
 }

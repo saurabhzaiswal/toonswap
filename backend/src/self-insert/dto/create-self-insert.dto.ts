@@ -16,7 +16,6 @@ export enum SelfInsertVoiceModeInput {
 const multipartBoolean = ({ value }: { value: unknown }) => value === true || value === 'true';
 
 export class CreateSelfInsertDto {
-  @IsOptional() @IsUUID() ownerSessionId?: string;
   @IsOptional() @IsUUID() projectId?: string;
   @IsString() @MaxLength(80) displayName!: string;
   @IsEnum(SelfInsertVoiceModeInput) voiceMode: SelfInsertVoiceModeInput =

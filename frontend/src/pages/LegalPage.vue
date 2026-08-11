@@ -6,22 +6,23 @@ const props = defineProps({ documentKey: { type: String, required: true } });
 
 const documents = {
   privacy: {
-    eyebrow: 'Privacy policy draft',
+    eyebrow: 'Privacy policy',
     title: 'Your face and voice deserve serious care.',
     accent: '#48b9a7',
     summary:
-      'This page describes the current ToonSwap beta data flow and the controls required before a public launch. It is a product-policy draft and must be reviewed by qualified counsel for every launch market.',
+      'This page explains how the current ToonSwap account beta handles identity, profile, creator, and consented media data. Market-specific legal review is still required before a broad commercial launch.',
     warning:
-      'Launch blocker: the current backend does not yet automate retention or deletion. Do not open the beta broadly or invite children to upload media until deletion, age assurance, consent, and privacy-request operations are implemented and tested.',
+      'Age thresholds and generation windows are deployment policies, not guesses in code. Creation fails closed until the operator configures them; children must not upload media without the legally required guardian flow.',
     sections: [
       [
         '1. What ToonSwap handles',
         [
-          'Anonymous UUIDv7 job/session identifiers.',
+          'Account email, verified sign-in identity, opaque UUIDv7 records, security sessions, hashed network signals, and last-seen timestamps.',
+          'Private profile fields: display name, date of birth, city, country code, locale, timezone, and optional profile picture.',
           'Selfies and other images you choose to upload.',
           'Voice recordings, typed scripts, story prompts, character briefs, dialogue, and scene instructions.',
           'Generated previews, provider outputs, processing status, and error details.',
-          'Basic anonymous traffic and device information collected through Vercel Web Analytics when enabled.',
+          'Basic traffic and device information collected through Vercel Web Analytics when enabled.',
         ],
       ],
       [
@@ -52,16 +53,17 @@ const documents = {
       [
         '5. Retention and deletion',
         [
-          'The beta currently lacks automated retention deletion; stored media may remain until manually removed by the operator.',
-          'Before public launch, source selfies and voice recordings should receive the shortest practical retention period, generated media should have a clearly published period, and deletion jobs should cover storage, databases, queues, logs, and provider copies where supported.',
-          'A working privacy contact and self-service deletion route must be published before broad access.',
+          'Self-insert source media is assigned a 24-hour expiry and an automated purge job; provider and queue deletion must still be verified in each deployed environment.',
+          'The profile page includes permanent account deletion. It removes the account database record and attempts to delete related profile, selfie, voice, reference, and generated media from configured storage.',
+          'Backups, security audit records, and provider copies may follow separate legally permitted retention periods; the operator must document those before commercial launch.',
         ],
       ],
       [
         '6. Security',
         [
           'Secrets belong only in server-side secret managers.',
-          'Production access should use least-privilege credentials, encrypted connections, private networking where available, signed or carefully scoped media URLs, audit logs, and incident response procedures.',
+          'Authentication uses one-time email codes or verified Google identity tokens. Session cookies are opaque and httpOnly; unsafe requests require a separate CSRF token. One-time codes are hashed, expiring, single-use, rate-limited, and never stored as plaintext.',
+          'Production access should use Secure cookies, least-privilege credentials, encrypted connections, private networking where available, signed media URLs, audit logs, and incident response procedures.',
           'No internet service is risk-free; avoid uploading media whose exposure would create unacceptable harm.',
         ],
       ],
@@ -69,16 +71,16 @@ const documents = {
         '7. Your choices and rights',
         [
           'Depending on location, people may have rights to access, correct, delete, restrict, object to, or receive information about their personal data.',
-          'ToonSwap must publish a verified contact channel and request-verification process before production launch.',
+          'Authenticated people can correct profile details and permanently delete their account from the profile page. A verified privacy contact and request-verification process must also be published before production launch.',
           'If a person withdraws permission for their face or voice, future use should stop and applicable stored assets should be removed.',
         ],
       ],
       [
         '8. Children',
         [
-          'The current beta is not intended for children under 13 and is not ready for child-directed launch.',
-          'Users aged 13–17 should use the service only with permission and supervision from a parent or legal guardian where required.',
-          'Age thresholds and consent rules vary by country; launch counsel must set the supported-age policy and user flow.',
+          'The beta is not ready for child-directed launch and does not guess a universal age threshold.',
+          'A deployment operator must configure the supported self-service age after legal review. Accounts below that threshold are locked for generation until a verified guardian workflow is implemented.',
+          'Age thresholds and consent rules vary by country; qualified counsel must set the supported policy and guardian experience.',
         ],
       ],
     ],
@@ -95,9 +97,9 @@ const documents = {
       [
         '1. Eligibility',
         [
-          'Do not use ToonSwap if you are under 13.',
-          'If you are under the age of legal majority where you live, use ToonSwap only with permission and supervision from a parent or guardian.',
-          'The public product must add an age gate and appropriate guardian-consent workflow before launch.',
+          'You must create an account and provide accurate eligibility information before using creator tools.',
+          'The deployment operator sets the supported self-service age after legal review; creation is unavailable while that policy is unconfigured.',
+          'People below the configured threshold may not generate until an appropriate verified guardian-consent workflow is implemented.',
         ],
       ],
       [
@@ -146,7 +148,7 @@ const documents = {
         '7. Enforcement',
         [
           'ToonSwap may reject prompts, stop jobs, remove content, restrict access, or preserve evidence when needed for safety, rights protection, legal compliance, or platform integrity.',
-          'Repeated or severe violations may lead to permanent blocking even though the product does not currently use user accounts.',
+          'Repeated or severe violations may lead to account blocking. Blocking immediately revokes active sessions and administrative changes are audit logged.',
         ],
       ],
       [

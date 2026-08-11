@@ -703,6 +703,54 @@ video {
   background: #fff;
   box-shadow: 0 24px 70px rgba(47, 36, 26, 0.1);
 }
+.studio-auth-gate {
+  width: min(780px, 100%);
+  margin: 0 auto;
+  padding: clamp(30px, 6vw, 64px);
+  border: 1.5px solid var(--line);
+  border-radius: 28px;
+  background: white;
+  box-shadow: 0 24px 70px rgba(47, 36, 26, 0.1);
+  text-align: center;
+}
+.studio-auth-gate .gate-mark {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  border-radius: 23px;
+  background: var(--gold);
+  transform: rotate(-3deg);
+}
+.studio-auth-gate .gate-mark img {
+  width: 58px;
+  height: 58px;
+}
+.studio-auth-gate h3 {
+  max-width: 16ch;
+  margin: 10px auto 16px;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.studio-auth-gate > p:not(.kicker) {
+  max-width: 62ch;
+  margin: 0 auto;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.studio-auth-gate > div:not(.gate-mark) {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 28px 0 20px;
+}
+.studio-auth-gate > small {
+  color: var(--muted);
+  font-weight: 700;
+}
 .creator-intro {
   display: grid;
   grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);

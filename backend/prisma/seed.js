@@ -210,7 +210,6 @@ const liveVoices = [
 async function seed() {
   const characters = worlds.flatMap(([worldId, worldName, era, prefix], worldIndex) =>
     roles.map(([roleId, role, suffix, personality, movement], roleIndex) => ({
-      id: `${worldId}-${roleId}`,
       slug: `${worldId}-${roleId}`,
       name: `${prefix}${suffix}`,
       worldId,
@@ -230,7 +229,6 @@ async function seed() {
   );
   const roadmapVoices = languages.flatMap(([languageCode, languageName, region], languageIndex) =>
     directions.map(([directionId, name, direction], directionIndex) => ({
-      id: `${languageCode}-${directionId}`,
       slug: `${languageCode}-${directionId}`,
       name,
       languageCode,
@@ -245,7 +243,6 @@ async function seed() {
   );
   const workingVoices = liveVoices.map(
     ([slug, name, languageCode, languageName, region, direction], index) => ({
-      id: slug,
       slug,
       name,
       languageCode,

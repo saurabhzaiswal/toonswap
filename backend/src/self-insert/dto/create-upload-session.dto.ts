@@ -15,7 +15,6 @@ import {
 import { SelfInsertVoiceModeInput } from './create-self-insert.dto';
 
 export class CreateUploadSessionDto {
-  @IsOptional() @IsUUID() ownerSessionId?: string;
   @IsOptional() @IsUUID() projectId?: string;
   @IsString() @MaxLength(80) displayName!: string;
   @IsEnum(SelfInsertVoiceModeInput) voiceMode: SelfInsertVoiceModeInput =
