@@ -9,37 +9,37 @@ const UPDATED_AT = '2026-08-11';
 
 const pageSeo = {
   home: {
-    title: 'ToonSwap AI Cartoon Video Maker | Original Characters & Voices',
+    title: 'AI Cartoon Video Maker | ToonSwap',
     description:
       'Create original AI cartoon videos with custom characters, editable scenes, consent-first voices, and multilingual story planning from 15 seconds to 60 minutes.',
     type: 'WebPage',
   },
   characters: {
-    title: '216 Original Cartoon Characters & Custom Character Maker | ToonSwap',
+    title: 'Original Cartoon Character Maker | ToonSwap',
     description:
       'Explore 24 illustrated originals, 216 structured character blueprints, movement styles, story worlds, and a custom original cartoon character designer.',
     type: 'CollectionPage',
   },
   voices: {
-    title: 'Cartoon Voice Library, Expressions & 200+ Language Roadmap | ToonSwap',
+    title: 'Cartoon Voice Library & Languages | ToonSwap',
     description:
       'Choose original visual voice personas by feeling, rhythm, region, and language, or use your own consented voice with clear expression controls.',
     type: 'CollectionPage',
   },
   'story-studio': {
-    title: 'AI Cartoon Story Studio | Multi-Character Scene & Voice Editor',
+    title: 'AI Cartoon Story Studio & Scene Editor | ToonSwap',
     description:
       'Plan a complete original cartoon in six guided steps with cast, worlds, dialogue, voices, movement, camera, continuity, and scene-level regeneration.',
     type: 'WebPage',
   },
   roadmap: {
-    title: 'How ToonSwap Makes AI Cartoon Videos | Product Roadmap',
+    title: 'AI Cartoon Video Workflow & Roadmap | ToonSwap',
     description:
       'See the guided cartoon workflow, editable production layers, safety gates, backend milestones, and worldwide language roadmap behind ToonSwap.',
     type: 'WebPage',
   },
   blog: {
-    title: 'AI Cartoon Creation, Character, Voice & Story Guides | ToonSwap Blog',
+    title: 'AI Cartoon Creation Guides | ToonSwap Blog',
     description:
       'Practical guides for original character design, multilingual comedy direction, scene planning, consent-first media, and responsible AI animation.',
     type: 'CollectionPage',
@@ -57,7 +57,7 @@ const pageSeo = {
     type: 'WebPage',
   },
   community: {
-    title: 'Community Guidelines | Original, Kind & Consent-First Cartoons',
+    title: 'Community Guidelines | ToonSwap Creator Safety',
     description:
       'Create joyful original stories while respecting real people, children, cultures, music, voices, copyrighted work, and community safety.',
     type: 'WebPage',
@@ -69,18 +69,18 @@ const pageSeo = {
     type: 'WebPage',
   },
   signup: {
-    title: 'Create Your ToonSwap Account',
+    title: 'Create a ToonSwap Creator Account',
     description:
       'Create a protected ToonSwap account for original characters, consented media, voices, and cartoon story projects.',
     type: 'WebPage',
   },
   profile: {
-    title: 'Your ToonSwap Profile',
+    title: 'Your Creator Profile & Settings | ToonSwap',
     description: 'Manage your private ToonSwap profile and account safety settings.',
     type: 'WebPage',
   },
   admin: {
-    title: 'ToonSwap Admin Dashboard',
+    title: 'ToonSwap Admin Dashboard & User Controls',
     description: 'Role-protected ToonSwap administration.',
     type: 'WebPage',
   },
@@ -138,7 +138,7 @@ function getPageDetails(route) {
   const post = getBlogPost(route);
   if (post) {
     return {
-      title: `${post.title} | ToonSwap Blog`,
+      title: post.seoTitle,
       description: post.excerpt,
       type: 'BlogPosting',
       image: absoluteUrl(post.cover),

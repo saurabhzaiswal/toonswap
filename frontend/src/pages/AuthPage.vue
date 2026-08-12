@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import TurnstileWidget from '../components/auth/TurnstileWidget.vue';
 import SiteHeader from '../components/SiteHeader.vue';
@@ -34,6 +34,10 @@ const challengeAction = computed(() => (isSignup.value ? 'signup' : 'login'));
 const validEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()));
 const turnstileEnabled = Boolean(turnstileSiteKey);
 const canAuthenticate = computed(() => turnstileEnabled && !auth.busy && !securityBusy.value);
+
+function cancelGooglePrompt() {
+  window.google?.accounts.id.cancel();
+}
 
 function destination() {
   if (!auth.user?.profileComplete) return '/app/profile';
@@ -81,7 +85,14 @@ function loadGoogle() {
     googleTarget.value.innerHTML = '';
     window.google?.accounts.id.initialize({
       client_id: googleClientId,
+      context: isSignup.value ? 'signup' : 'signin',
+      ux_mode: 'popup',
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      itp_support: true,
+      use_fedcm_for_prompt: true,
       callback: async ({ credential }) => {
+        if (!credential) return;
         if (!turnstileEnabled) {
           turnstileError.value = 'Account access is unavailable until Turnstile is configured.';
           return;
@@ -101,6 +112,7 @@ function loadGoogle() {
       text: isSignup.value ? 'signup_with' : 'signin_with',
       width: Math.min(380, googleTarget.value.clientWidth || 380),
     });
+    if (turnstileEnabled) window.google?.accounts.id.prompt();
   };
   if (window.google?.accounts) return initialize();
   const existing = document.querySelector('script[data-toonswap-google]');
@@ -163,6 +175,7 @@ watch(turnstileToken, async (token) => {
   if (pendingEmailRequest.value) await runEmailRequest();
 });
 watch(isSignup, async () => {
+  cancelGooglePrompt();
   changeEmail();
   resetVerification();
   await nextTick();
@@ -175,6 +188,8 @@ onMounted(async () => {
   await nextTick();
   loadGoogle();
 });
+
+onBeforeUnmount(cancelGooglePrompt);
 </script>
 
 <template>

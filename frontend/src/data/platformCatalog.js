@@ -482,6 +482,7 @@ const blogPostDrafts = [
     slug: 'original-characters-without-copying',
     category: 'Original IP',
     title: 'How to build nostalgic cartoon energy without copying a famous character',
+    seoTitle: 'Create Original Cartoon Characters | ToonSwap',
     excerpt:
       'A practical framework for creating fresh silhouettes, motivations, worlds, movement rules, and voices that belong to you.',
     readTime: '7 min read',
@@ -506,6 +507,7 @@ const blogPostDrafts = [
     slug: 'directing-comedy-across-languages',
     category: 'Voice & culture',
     title: 'Why translating words is not enough for comedy across languages',
+    seoTitle: 'Directing Comedy Across Languages | ToonSwap',
     excerpt:
       'Timing, relationships, politeness, rhythm, and local context matter as much as vocabulary.',
     readTime: '6 min read',
@@ -530,6 +532,7 @@ const blogPostDrafts = [
     slug: 'scene-by-scene-animation-workflow',
     category: 'Story craft',
     title: 'A scene-by-scene workflow for turning one prompt into a complete cartoon story',
+    seoTitle: 'Scene-by-Scene Cartoon Story Workflow | ToonSwap',
     excerpt:
       'Plan cast, beats, camera, action, dialogue, voice direction, and continuity before rendering expensive video.',
     readTime: '8 min read',
@@ -554,6 +557,7 @@ const blogPostDrafts = [
     slug: 'consent-first-family-stories',
     category: 'Safety',
     title: 'A consent-first checklist for family cartoon stories',
+    seoTitle: 'Consent-First Family Cartoon Stories | ToonSwap',
     excerpt:
       'How to use relatives’ photos and voices respectfully, with permission and clear controls.',
     readTime: '5 min read',
@@ -577,6 +581,7 @@ const blogPostDrafts = [
     slug: 'designing-stone-to-space-worlds',
     category: 'World building',
     title: 'Designing original cartoon worlds from stone age to deep space',
+    seoTitle: 'Design Cartoon Worlds from Stone to Space | ToonSwap',
     excerpt:
       'Use materials, tools, social rules, motion, sound, and comedy problems to make each era distinct.',
     readTime: '7 min read',
@@ -600,6 +605,7 @@ const blogPostDrafts = [
     slug: 'one-hour-animation-cost-plan',
     category: 'Production',
     title: 'Why a one-hour AI cartoon needs a render and cost plan',
+    seoTitle: 'Plan a One-Hour AI Cartoon Render | ToonSwap',
     excerpt:
       'Long-form generation requires shot budgeting, resumable queues, versioned assets, moderation, and predictable spend.',
     readTime: '9 min read',

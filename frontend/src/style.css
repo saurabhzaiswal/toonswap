@@ -437,9 +437,9 @@ video {
 }
 .toon-hair {
   position: absolute;
-  top: 37px;
-  width: 82px;
-  height: 35px;
+  top: 13.5%;
+  width: 44%;
+  height: 12.75%;
   border-radius: 80% 20% 50% 15%;
   background: var(--ink);
   transform: rotate(-7deg);
@@ -499,9 +499,9 @@ video {
 }
 .toon-band {
   position: absolute;
-  top: 45px;
-  width: 82px;
-  height: 18px;
+  top: 17.3%;
+  width: 47.7%;
+  height: 6.9%;
   border-radius: 8px;
   background: var(--ink);
 }
@@ -2324,6 +2324,9 @@ textarea:focus-visible {
     width: 145px;
     height: 230px;
   }
+  .toon-chulbul b {
+    margin-top: -58px;
+  }
   .toon-robo {
     width: 150px;
     height: 270px;
@@ -2331,6 +2334,9 @@ textarea:focus-visible {
   .toon-ninja {
     width: 138px;
     height: 215px;
+  }
+  .toon-ninja b {
+    margin-top: -50px;
   }
   .creator-grid {
     grid-template-columns: 1fr;
@@ -2492,6 +2498,9 @@ textarea:focus-visible {
     width: 105px;
     height: 185px;
   }
+  .toon-chulbul b {
+    margin-top: -46px;
+  }
   .toon-robo {
     left: 33%;
     width: 120px;
@@ -2501,6 +2510,9 @@ textarea:focus-visible {
     right: 1%;
     width: 104px;
     height: 175px;
+  }
+  .toon-ninja b {
+    margin-top: -40px;
   }
   .toon b {
     width: 50px;
