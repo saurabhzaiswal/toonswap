@@ -81,3 +81,6 @@ frontend/ios/DerivedData/
 # Test artifacts
 playwright-report/
 test-results/
+
+.vercel
+.env*

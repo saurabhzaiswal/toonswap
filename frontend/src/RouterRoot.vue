@@ -55,27 +55,88 @@ onBeforeUnmount(() => {
 //  temparay work 
 
 const isProduction = import.meta.env.VITE_PRODUCTION === 'true'
-const gatePassword = import.meta.env.VITE_GATE_PASSWORD || ''
 const isUnlocked = ref(!isProduction)
+const checkingGate = ref(isProduction)
 const enteredPassword = ref('')
 const errorMsg = ref('')
-
-function checkPassword() {
-  if (enteredPassword.value === gatePassword) {
+const unlocking = ref(false)
+async function checkExistingGate() {
+  // Development mode: no gate
+  if (!isProduction) {
     isUnlocked.value = true
-    errorMsg.value = ''
-    enteredPassword.value = ''
-  } else {
+    checkingGate.value = false
+    return
+  }
+  
+  try {
+    const response = await fetch('/api/check-gate', {
+      credentials: 'include',
+    })
+
+    isUnlocked.value = response.ok
+  } catch (error) {
+    console.error('Gate check failed:', error)
     isUnlocked.value = false
-    errorMsg.value = 'Wrong password, try again'
+  } finally {
+    checkingGate.value = false
   }
 }
+
+async function checkPassword() {
+  if (!enteredPassword.value) {
+    errorMsg.value = 'Please enter password'
+    return
+  }
+
+  unlocking.value = true
+  errorMsg.value = ''
+
+  try {
+    const response = await fetch('/api/unlock', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        password: enteredPassword.value,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (response.ok && data.success) {
+      isUnlocked.value = true
+      enteredPassword.value = ''
+      errorMsg.value = ''
+    } else {
+      errorMsg.value = data.message || 'Wrong password, try again'
+    }
+  } catch (error) {
+    console.error('Unlock failed:', error)
+    errorMsg.value = 'Unable to connect to server'
+  } finally {
+    unlocking.value = false
+  }
+}
+
+onMounted(() => {
+  checkExistingGate()
+})
 </script>
 
 <template>
-   <!-- Production + locked -->
+  <!-- Checking authentication -->
   <div
-    v-if="isProduction && !isUnlocked"
+    v-if="checkingGate"
+    class="min-h-screen flex items-center justify-center"
+  >
+    Loading...
+  </div>
+
+  <!-- Password Gate -->
+  <div
+    v-else-if="isProduction && !isUnlocked"
     style="
       min-height:100vh;
       display:flex;
@@ -122,9 +183,16 @@ function checkPassword() {
         "
         class="focus:outline-none"
       />
-      <AppButton @click="checkPassword" class="header-cta w-full" variant="primary" size="sm"
-            >Enter</AppButton
-          >
+
+      <AppButton
+        @click="checkPassword"
+        :disabled="unlocking"
+        class="header-cta w-full"
+        variant="primary"
+        size="sm"
+      >
+        {{ unlocking ? 'Checking...' : 'Enter' }}
+      </AppButton>
 
       <p
         v-if="errorMsg"
