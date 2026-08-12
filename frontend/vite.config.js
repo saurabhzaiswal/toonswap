@@ -11,5 +11,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3000',
     },
+    port: 5173,
+    strictPort: true,
   },
 });
